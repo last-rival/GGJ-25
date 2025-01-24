@@ -1,0 +1,4 @@
+- Add player controls.
+- Decide to do 2D or 3D.
+- Add lazer pointer for where the bubble will flow.
+- Add air vents and stuff to spice up the game.
