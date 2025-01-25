@@ -10,6 +10,6 @@ public enum ActionButtons {
 public struct NetworkInputData : INetworkInput {
 
     public NetworkButtons buttons;
-    public Vector3 direction;
+    public Vector2 cursorPosition;
 
 }

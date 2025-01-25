@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCallbacks {
 
+    [SerializeField] private Camera _camera;
+    [SerializeField] private GameObject _tempLocator;
+
     private NetworkInputData _accumulatedInput;
     private bool _resetInput;
 
@@ -16,24 +19,12 @@ public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCall
             _resetInput = false;
         }
 
-        if (Input.GetKey(KeyCode.W)) {
-            _accumulatedInput.direction += Vector3.forward;
-        }
-
-        if (Input.GetKey(KeyCode.S)) {
-            _accumulatedInput.direction += Vector3.back;
-        }
-
-        if (Input.GetKey(KeyCode.A)) {
-            _accumulatedInput.direction += Vector3.left;
-        }
-
-        if (Input.GetKey(KeyCode.D)) {
-            _accumulatedInput.direction += Vector3.right;
-        }
+        var cursorWorldPos = _camera.ScreenToWorldPoint(Input.mousePosition);
+        cursorWorldPos.z = 0;
+        _tempLocator.transform.position = cursorWorldPos;
+        _accumulatedInput.cursorPosition = cursorWorldPos;
 
         NetworkButtons buttonsPressed = default;
-
         buttonsPressed.Set(ActionButtons.Fire, Input.GetMouseButton(0));
         buttonsPressed.Set(ActionButtons.FireAlt, Input.GetMouseButton(1));
         buttonsPressed.Set(ActionButtons.Jump, Input.GetKey(KeyCode.Space));

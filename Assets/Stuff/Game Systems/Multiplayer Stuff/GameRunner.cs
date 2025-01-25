@@ -2,19 +2,17 @@ using Fusion;
 using Fusion.Sockets;
 using System;
 using System.Collections.Generic;
-using Fusion.Addons.Physics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks {
+public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
-    private NetworkRunner _runner;
+    [SerializeField] private NetworkRunner _networkRunner;
+    [SerializeField] private Transform[] _spawnPositions;
+    [SerializeField] private UIManager _uiManager;
 
-    async void StartGame(GameMode gameMode) {
-        _runner = gameObject.AddComponent<NetworkRunner>();
-        gameObject.AddComponent<RunnerSimulatePhysics3D>();
-
-        _runner.ProvideInput = true;
+    public async void StartGame(GameMode gameMode) {
+        _networkRunner.ProvideInput = true;
 
         var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
         var sceneInfo = new NetworkSceneInfo();
@@ -23,27 +21,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks {
             sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
         }
 
-        await _runner.StartGame(new StartGameArgs() {
+        await _networkRunner.StartGame(new StartGameArgs {
             GameMode = gameMode,
             SessionName = "TestRoom",
             Scene = scene,
             SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
         });
-
-    }
-
-    private void OnGUI() {
-        if (_runner != null) {
-            return;
-        }
-
-        if (GUI.Button(new Rect(0, 0, 200, 40), "Host")) {
-            StartGame(GameMode.Host);
-        }
-
-        if (GUI.Button(new Rect(0, 80, 200, 40), "Join")) {
-            StartGame(GameMode.Client);
-        }
     }
 
     [SerializeField] private NetworkPrefabRef _playerPrefab;
@@ -51,12 +34,15 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks {
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
         if (runner.IsServer) {
-            var spawnPosition = new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0);
+            var spawnPosition = _spawnPositions[_spawnedCharacters.Count].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
         }
 
         // TODO : Let other game systems know that a player has joined the arena.
+        if (player == runner.LocalPlayer) {
+            _uiManager.SetHudScreen();
+        }
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) {
@@ -79,6 +65,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {
+        _uiManager.SetMenuScreen();
     }
 
     public void OnConnectedToServer(NetworkRunner runner) {
@@ -91,6 +78,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {
+        _uiManager.SetMenuScreen();
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) {
