@@ -11,6 +11,8 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     [SerializeField] private Transform[] _spawnPositions;
     [SerializeField] private UIManager _uiManager;
 
+    public static string _profileName;
+
     public async void StartGame(GameMode gameMode) {
         _networkRunner.ProvideInput = true;
 
@@ -25,12 +27,16 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
             GameMode = gameMode,
             SessionName = "TestRoom",
             Scene = scene,
-            SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
+            SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>(),
         });
     }
 
     [SerializeField] private NetworkPrefabRef _playerPrefab;
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
+
+    public void SetCurrentPlayer(string className) {
+        _profileName = className;
+    }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
         if (runner.IsServer) {
@@ -66,6 +72,10 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {
         _uiManager.SetMenuScreen();
+    }
+
+    public void OnConnectedToServer() {
+        print("Connected to ze server.");
     }
 
     public void OnConnectedToServer(NetworkRunner runner) {

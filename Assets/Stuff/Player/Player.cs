@@ -6,13 +6,17 @@ public class Player : NetworkBehaviour {
 
     [SerializeField] private NetworkRigidbody2D _rigidbody2D;
     [SerializeField] private Projectile _projectilePrefab;
+    [SerializeField] private PlayerStatusUI _canvas;
 
     ChangeDetector changeDetector { get; set; }
 
     public override void Spawned() {
         changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         InitUI();
-        SetClass(classId);
+
+        if (Object.HasInputAuthority) {
+            RpcChangeClassTo(GameRunner._profileName);
+        }
 
         if (Runner.IsClient) {
             Runner.SetIsSimulated(Object, true);
@@ -27,8 +31,8 @@ public class Player : NetworkBehaviour {
 
                     break;
 
-                case nameof(classId):
-                    SetClass(classId);
+                case nameof(profileName):
+                    SetProfile(profileName.ToString());
 
                     break;
             }
@@ -40,6 +44,10 @@ public class Player : NetworkBehaviour {
     }
 
     private void SetLook(float lookAngle) {
+        if (classVisuals == null) {
+            return;
+        }
+
         classVisuals.transform.rotation = Quaternion.Euler(0f, 0f, lookAngle);
     }
 
@@ -184,15 +192,19 @@ public class Player : NetworkBehaviour {
             return false;
         }
 
+        if (classVisuals == null) {
+            return false;
+        }
+
         lastShotTime = Time.time;
         Runner.Spawn(_projectilePrefab, classVisuals.projectileSpawnPoint.position, Quaternion.identity, Object.InputAuthority,
             onBeforeSpawned: (_, o) => {
                 o.GetBehaviour<Projectile>().Init(
-                    scale: _currentProfile.projectileSize,
-                    velocity: classVisuals.transform.right * (_currentProfile.projectileSpeed + _rigidbody2D.Rigidbody.velocity.magnitude),
+                    scale: _currentProfile.projectileData.projectileSize,
+                    velocity: classVisuals.transform.right * (_currentProfile.projectileData.projectileSpeed + _rigidbody2D.Rigidbody.velocity.magnitude),
                     owner: Object.InputAuthority,
-                    hitPoints: _currentProfile.projectileHitPoints,
-                    damage: _currentProfile.projectileDamage
+                    hitPoints: _currentProfile.projectileData.projectileHitPoints,
+                    damage: _currentProfile.projectileData.projectileDamage
                 );
             });
 
@@ -237,24 +249,18 @@ public class Player : NetworkBehaviour {
 
     #region  Classes
 
-    [Networked] private ClassType classId { get; set; }
+    [Networked] private NetworkString<_16> profileName { get; set; }
 
     [Header("Profiles")]
     [SerializeField] private Profile _currentProfile;
 
-    [SerializeField] private Profile[] _profiles;
+    [SerializeField] private ProfileDatabase _profiles;
     [SerializeField] private Transform _visualHolder;
+
     public ClassVisuals classVisuals { get; set; }
 
-    void SetClass(ClassType classType) {
-        foreach (var profile in _profiles) {
-            if (profile.id.Equals(classType)) {
-                _currentProfile = profile;
-
-                break;
-            }
-        }
-
+    void SetProfile(string profileName) {
+        _currentProfile = _profiles.GetProfileByName(profileName);
         hitPoints = _currentProfile.maxHp;
         maxHitPoints = hitPoints;
 
@@ -268,8 +274,8 @@ public class Player : NetworkBehaviour {
 
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
-    public void RpcChangeClassTo(ClassType classType) {
-        SetClass(classType);
+    public void RpcChangeClassTo(NetworkString<_16> className) {
+        SetProfile(className.ToString());
     }
 
     #endregion

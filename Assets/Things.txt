@@ -4,5 +4,6 @@
 - Add air vents and stuff to spice up the game.
 - Add physics to the game
 
-- Add Boosters.
-- Health Bars.
+- Add player profiles.
+- Load game with selected profile.
+- Show entering battle as message.

@@ -126,7 +126,7 @@ GameObject:
   - component: {fileID: 4597970139678324398}
   - component: {fileID: 5347106516115325317}
   m_Layer: 3
-  m_Name: OctoClass
+  m_Name: Ocotshot
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
