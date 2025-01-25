@@ -28,14 +28,15 @@ public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCall
             _accumulatedInput.direction += Vector3.left;
         }
 
-        if (Input.GetKey(KeyCode.B)) {
+        if (Input.GetKey(KeyCode.D)) {
             _accumulatedInput.direction += Vector3.right;
         }
 
         NetworkButtons buttonsPressed = default;
 
         buttonsPressed.Set(ActionButtons.Fire, Input.GetMouseButton(0));
-        buttonsPressed.Set(ActionButtons.Fire2, Input.GetMouseButton(1));
+        buttonsPressed.Set(ActionButtons.FireAlt, Input.GetMouseButton(1));
+        buttonsPressed.Set(ActionButtons.Jump, Input.GetKey(KeyCode.Space));
 
         _accumulatedInput.buttons = new NetworkButtons(_accumulatedInput.buttons.Bits | buttonsPressed.Bits);
     }

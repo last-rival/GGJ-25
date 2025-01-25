@@ -3,9 +3,8 @@ using UnityEngine;
 
 public enum ActionButtons {
     Fire,
-    Fire2,
+    FireAlt,
     Jump,
-    Alt,
 }
 
 public struct NetworkInputData : INetworkInput {
