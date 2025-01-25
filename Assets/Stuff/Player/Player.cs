@@ -11,9 +11,12 @@ public class Player : NetworkBehaviour {
 
     public override void Spawned() {
         changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-
         InitUI();
         SetClass(classId);
+
+        if (Runner.IsClient) {
+            Runner.SetIsSimulated(Object, true);
+        }
     }
 
     public override void Render() {
@@ -54,12 +57,13 @@ public class Player : NetworkBehaviour {
         }
     }
 
+    [field: SerializeField]
     [Networked] private float zLook { get; set; }
 
     private void ProcessLook(Vector2 cursorWorldPos) {
         var playerPos = (Vector2)_rigidbody2D.RBPosition;
         var direction = cursorWorldPos - playerPos;
-        var angle = Vector2.SignedAngle(Vector2.right, direction);
+        var angle = Vector2.SignedAngle(Vector2.right, direction.normalized);
         zLook = angle;
 
         Debug.DrawRay(playerPos, direction, Color.red);
@@ -148,12 +152,6 @@ public class Player : NetworkBehaviour {
         if (other.gameObject.CompareTag("Player")) {
             print("Hit a player");
         }
-
-        if (other.gameObject.CompareTag("Projectile")) {
-            print("Hit a projectile");
-        }
-
-        // Do a nice bounce to the players. 
     }
 
     #region Warfare
@@ -185,7 +183,7 @@ public class Player : NetworkBehaviour {
         return true;
     }
 
-    public void HitPlayer(PlayerRef owner, float damage) {
+    public void Hit(PlayerRef owner, float damage) {
         if (Object.HasStateAuthority == false) {
             return;
         }
@@ -198,6 +196,11 @@ public class Player : NetworkBehaviour {
         }
 
         hitPoints = Mathf.Max(0, hitPoints - damage);
+
+        if (Mathf.Approximately(hitPoints, 0)) {
+            print($"Player {Object.InputAuthority} has died in the battle field.");
+            Runner.Despawn(Object);
+        }
     }
 
     #endregion

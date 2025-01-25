@@ -71,6 +71,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _hitPoints: 0
   _spawnScale: 0
+  _damage: 0
   _rigidbody: {fileID: 7519040008579294057}
 --- !u!50 &7519040008579294057
 Rigidbody2D:
@@ -112,8 +113,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 1
+  SyncScale: 1
+  SyncParent: 0
   _interpolationTarget: {fileID: 8868633663798043057}
   UsePreciseRotation: 0
   UseRenderSleepThresholds: 1

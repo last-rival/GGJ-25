@@ -145,8 +145,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 1
+  SyncScale: 1
+  SyncParent: 0
   _interpolationTarget: {fileID: 7432923382726774807}
   UsePreciseRotation: 0
   UseRenderSleepThresholds: 1

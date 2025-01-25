@@ -23,6 +23,10 @@ public class Projectile : NetworkBehaviour {
 
     public override void Spawned() {
         transform.localScale = Vector3.one * spawnScale;
+
+        if (Runner.IsClient) {
+            Runner.SetIsSimulated(Object, true);
+        }
     }
 
     public override void FixedUpdateNetwork() {
@@ -47,6 +51,10 @@ public class Projectile : NetworkBehaviour {
     }
 
     void ProcessHit(Rigidbody2D rb) {
+        if (Object.HasStateAuthority == false) {
+            return;
+        }
+
         if (rb == null) {
             return;
         }
@@ -63,7 +71,7 @@ public class Projectile : NetworkBehaviour {
             }
         }
 
-        player.HitPlayer(owner, damage);
+        player.Hit(owner, damage);
     }
 
 }
