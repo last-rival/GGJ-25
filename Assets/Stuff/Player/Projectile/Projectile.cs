@@ -5,24 +5,28 @@ public class Projectile : NetworkBehaviour {
 
     [Networked] public int hitPoints { get; set; }
     private int maxHitPoints;
+
+    [Networked] private NetworkString<_16> profileName { get; set; }
+
     [Networked] public PlayerRef owner { get; set; }
-    [Networked] public float spawnScale { get; set; }
-    [Networked] public float damage { get; set; }
-
     [SerializeField] private Rigidbody2D _rigidbody;
+    [SerializeField] private ProfileDatabase _profileDatabase;
 
-    public void Init(float scale, Vector2 velocity, PlayerRef owner, int hitPoints, float damage) {
+    private ProjectileData _data;
+
+    public void Init(Vector2 velocity, PlayerRef owner, NetworkString<_16> profileName) {
         _rigidbody.velocity = velocity;
-        spawnScale = scale;
-
         this.owner = owner;
-        this.hitPoints = hitPoints;
-        this.damage = damage;
-        maxHitPoints = hitPoints;
+        this.profileName = profileName;
     }
 
     public override void Spawned() {
-        transform.localScale = Vector3.one * spawnScale;
+        _data = _profileDatabase.GetProfileByName(profileName.ToString()).projectileData;
+
+        hitPoints = _data.projectileHitPoints;
+        maxHitPoints = hitPoints;
+
+        transform.localScale = Vector3.one * _data.projectileSize;
 
         if (Runner.IsClient) {
             Runner.SetIsSimulated(Object, true);
@@ -72,7 +76,7 @@ public class Projectile : NetworkBehaviour {
             }
         }
 
-        player.Hit(owner, damage);
+        player.Hit(owner, _data.projectileDamage);
 
         return true;
     }

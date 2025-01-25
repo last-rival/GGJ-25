@@ -1,8 +1,6 @@
-using System;
 using Fusion;
 using TMPro;
 using UnityEngine;
-using Behaviour = Fusion.Behaviour;
 
 public class UIManager : MonoBehaviour {
 

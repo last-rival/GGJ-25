@@ -13,4 +13,7 @@ public class ProjectileData : ScriptableObject {
 
     [Range(1, 10)]
     public int projectileHitPoints = 5;
+
+    [Range(0, 100)]
+    public float shotKnockBack = 5;
 }

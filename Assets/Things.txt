@@ -1,5 +1,1 @@
-- Add thruster visual.
-- Add player UI.
 - Import the bubbles.
-- Get Spine working somehow.
-- Update projectile of get data from database.

@@ -52,6 +52,7 @@ public class Player : NetworkBehaviour {
         }
 
         DoReloadFill();
+        DoThrusterEffects();
 
         if (Object != null && Object.IsValid &&  Object.HasInputAuthority) {
             UpdateUI();
@@ -59,11 +60,11 @@ public class Player : NetworkBehaviour {
     }
 
     private void SetLook(float lookAngle) {
-        if (classVisuals == null) {
+        if (visual == null) {
             return;
         }
 
-        classVisuals.transform.rotation = Quaternion.Euler(0f, 0f, lookAngle);
+        visual.transform.rotation = Quaternion.Euler(0f, 0f, lookAngle);
     }
 
     private bool isFireHeld { get; set; }
@@ -210,19 +211,21 @@ public class Player : NetworkBehaviour {
             return false;
         }
 
-        if (classVisuals == null) {
+        if (visual == null) {
             return false;
         }
 
         lastShotTime = Time.time;
-        Runner.Spawn(_projectilePrefab, classVisuals.projectileSpawnPoint.position, Quaternion.identity, Object.InputAuthority,
+
+        var facingDir = visual.transform.right;
+        _rigidbody2D.Rigidbody.AddForce(_currentProfile.projectileData.shotKnockBack * facingDir * -1, ForceMode2D.Impulse);
+
+        Runner.Spawn(_projectilePrefab, visual.projectileSpawnPoint.position, Quaternion.identity, Object.InputAuthority,
             onBeforeSpawned: (_, o) => {
                 o.GetBehaviour<Projectile>().Init(
-                    scale: _currentProfile.projectileData.projectileSize,
-                    velocity: classVisuals.transform.right * (_currentProfile.projectileData.projectileSpeed + _rigidbody2D.Rigidbody.velocity.magnitude),
+                    velocity: facingDir * (_currentProfile.projectileData.projectileSpeed + _rigidbody2D.Rigidbody.velocity.magnitude),
                     owner: Object.InputAuthority,
-                    hitPoints: _currentProfile.projectileData.projectileHitPoints,
-                    damage: _currentProfile.projectileData.projectileDamage
+                    profileName: profileName
                 );
             });
 
@@ -236,7 +239,7 @@ public class Player : NetworkBehaviour {
         var powerPerSec = _currentProfile.thrusterMaxPower / _currentProfile.fullThrustTime;
         power += powerPerSec * Runner.DeltaTime;
         power = Mathf.Min(_currentProfile.thrusterMaxPower, power);
-        var direction = classVisuals.transform.right;
+        var direction = visual.transform.right;
         rb.AddForce(direction * power, ForceMode2D.Force);
     }
 
@@ -275,6 +278,20 @@ public class Player : NetworkBehaviour {
         }
     }
 
+    private void DoThrusterEffects() {
+        if (visual == null) {
+            return;
+        }
+
+        if (Mathf.Approximately(power, 0)) {
+            visual.SetThrusterActive(false);
+
+            return;
+        }
+
+        visual.SetThrusterActive(true);
+    }
+
     private void DoAirEffects(float airCapacity) {
         var fill = airCapacity / maxAirCapacity;
         _canvas.SetAirLeft(fill);
@@ -298,18 +315,18 @@ public class Player : NetworkBehaviour {
     [SerializeField] private ProfileDatabase _profiles;
     [SerializeField] private Transform _visualHolder;
 
-    public ClassVisuals classVisuals { get; set; }
+    public ClassVisuals visual { get; set; }
 
     void SetProfile(string profileName) {
         _currentProfile = _profiles.GetProfileByName(profileName);
         hitPoints = _currentProfile.maxHp;
         maxHitPoints = hitPoints;
 
-        if (classVisuals != null) {
-            Destroy(classVisuals.gameObject);
+        if (visual != null) {
+            Destroy(visual.gameObject);
         }
 
-        classVisuals = Instantiate(_currentProfile.classPrefab, _visualHolder);
+        visual = Instantiate(_currentProfile.classPrefab, _visualHolder);
         // Update class visuals
     }
 

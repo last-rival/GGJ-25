@@ -16,3 +16,4 @@ MonoBehaviour:
   projectileSpeed: 18
   projectileDamage: 60
   projectileHitPoints: 4
+  shotKnockBack: 10

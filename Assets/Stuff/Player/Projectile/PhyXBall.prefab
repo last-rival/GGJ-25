@@ -70,9 +70,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hitPoints: 0
-  _spawnScale: 0
-  _damage: 0
   _rigidbody: {fileID: 7519040008579294057}
+  _profileDatabase: {fileID: 11400000, guid: 141cb162df0eedb4ab6a41b1cd29431b, type: 2}
 --- !u!50 &7519040008579294057
 Rigidbody2D:
   serializedVersion: 4
