@@ -1,2 +1,4 @@
 - Shrinking bubble.
 - Dropping thrusters.
+- Network state announcer.
+- Victory sequence.

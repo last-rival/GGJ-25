@@ -66,7 +66,7 @@ public class Projectile : NetworkBehaviour {
 
         var player = rb.GetComponent<Player>();
 
-        if (player == null) {
+        if (player == null || player.Object == null || player.Object.IsValid == false) {
             return false;
         }
 

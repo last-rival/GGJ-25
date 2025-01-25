@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Assault
   m_EditorClassIdentifier: 
   projectileSize: 1
-  projectileSpeed: 7
+  projectileSpeed: 9
   projectileDamage: 20
   projectileHitPoints: 6
   shotKnockBack: 5

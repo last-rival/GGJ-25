@@ -21,10 +21,13 @@ public class Profile : ScriptableObject {
     public float maxAir = 100;
 
     [Range(0.25f, 5)]
-    public float startSize = 1f;
+    public float maxSize = 1f;
+
+    [Range(0.1f, 5)]
+    public float minSize = 0.3f;
 
     [Header("Attack")]
-    public float attackCost = 2;
+    public float fireCost = 2;
 
     [Range(0.1f, 5f)]
     public float fireCooldown = 1;
@@ -41,8 +44,9 @@ public class Profile : ScriptableObject {
     [Range(0.1f, 10)]
     public float fullThrustTime = 2;
 
+    [FormerlySerializedAs("thrusterDropThreshold")]
     [Range(0, 100)]
-    public float thrusterDropThreshold = 10;
+    public float thrusterFailureThreshold = 10;
 
     [Header("Visuals")]
     public PlayerVisuals PlayerPrefab;

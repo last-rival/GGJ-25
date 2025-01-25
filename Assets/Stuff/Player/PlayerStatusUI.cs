@@ -20,7 +20,7 @@ public class PlayerStatusUI  : MonoBehaviour {
     }
 
     public void SetAirLeft(float fill) {
-
+        _air.fillAmount = fill;
     }
 
     public void Say(string message) {

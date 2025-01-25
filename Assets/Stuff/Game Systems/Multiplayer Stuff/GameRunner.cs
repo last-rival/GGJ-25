@@ -42,7 +42,8 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
         if (runner.IsServer) {
-            var spawnPosition = _spawnPositions[_spawnedCharacters.Count].position;
+            var spawnPoints = _spawnPositions.Length;
+            var spawnPosition = _spawnPositions[_spawnedCharacters.Count % spawnPoints].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
         }

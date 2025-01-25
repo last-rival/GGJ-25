@@ -155,7 +155,7 @@ public class Player : NetworkBehaviour {
     }
 
     private void ProcessAltFire() {
-        if (Object.HasStateAuthority == false) {
+        if (Object == null || Object.HasStateAuthority == false) {
             return;
         }
 
@@ -198,9 +198,11 @@ public class Player : NetworkBehaviour {
 
     float lastShotTime;
 
+    [field: SerializeField]
     [Networked] private float hitPoints { get; set; }
     private float maxHitPoints;
 
+    [field: SerializeField]
     [Networked] private float airCapacity { get; set; }
     private float maxAirCapacity;
 
@@ -217,6 +219,9 @@ public class Player : NetworkBehaviour {
 
         lastShotTime = Time.time;
 
+        var remainingAir = airCapacity - _currentProfile.fireCost;
+        airCapacity = Mathf.Max(0, remainingAir);
+
         var facingDir = visual.transform.right;
         _rigidbody2D.Rigidbody.AddForce(_currentProfile.projectileData.shotKnockBack * facingDir * -1, ForceMode2D.Impulse);
 
@@ -229,12 +234,25 @@ public class Player : NetworkBehaviour {
                 );
             });
 
+        if (airCapacity == 0) {
+            Runner.Despawn(Object);
+        }
+
         return true;
     }
 
     private float power = 0;
 
     public void EngageThrusters() {
+        if (airCapacity <= _currentProfile.thrusterFailureThreshold) {
+            power = 0;
+
+            return;
+        }
+
+        var cost = _currentProfile.thrusterCostPerSec * Runner.DeltaTime;
+        airCapacity -= cost;
+        airCapacity = Mathf.Max(0, airCapacity);
         var rb = _rigidbody2D.Rigidbody;
         var powerPerSec = _currentProfile.thrusterMaxPower / _currentProfile.fullThrustTime;
         power += powerPerSec * Runner.DeltaTime;
@@ -293,8 +311,24 @@ public class Player : NetworkBehaviour {
     }
 
     private void DoAirEffects(float airCapacity) {
+        if (visual == null) {
+            return;
+        }
+
         var fill = airCapacity / maxAirCapacity;
         _canvas.SetAirLeft(fill);
+
+        var min = _currentProfile.minSize;
+        var max = _currentProfile.maxSize;
+        var origScale = _currentProfile.PlayerPrefab.bubble.localScale;
+        var scale = Mathf.Lerp(min, max, fill);
+        visual.SetScale(origScale * scale);
+
+        if (airCapacity < _currentProfile.thrusterFailureThreshold) {
+            // Show VFX of the thruster basting off.
+            visual.thruster.SetActive(false);
+        }
+
     }
 
     private void DoReloadFill() {
@@ -319,8 +353,12 @@ public class Player : NetworkBehaviour {
 
     void SetProfile(string profileName) {
         _currentProfile = _profiles.GetProfileByName(profileName);
+
         hitPoints = _currentProfile.maxHp;
         maxHitPoints = hitPoints;
+
+        airCapacity = _currentProfile.maxAir;
+        maxAirCapacity = airCapacity;
 
         if (visual != null) {
             Destroy(visual.gameObject);

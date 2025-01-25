@@ -13,6 +13,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Seashot
       objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.g
+      value: 0.980809
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key0.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.b
+      value: 0.7075472
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.g
+      value: 0.4599666
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272905453699521593, guid: 844ea694e289e77499bc27034f4377fc,
+        type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.r
+      value: 0.09678713
+      objectReference: {fileID: 0}
     - target: {fileID: 3396341678259907884, guid: 844ea694e289e77499bc27034f4377fc,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -102,16 +132,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Radius
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5814609407985678039, guid: 844ea694e289e77499bc27034f4377fc,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5.23
-      objectReference: {fileID: 0}
-    - target: {fileID: 5814609407985678039, guid: 844ea694e289e77499bc27034f4377fc,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.44
       objectReference: {fileID: 0}
     - target: {fileID: 8678595292091595784, guid: 844ea694e289e77499bc27034f4377fc,
         type: 3}
