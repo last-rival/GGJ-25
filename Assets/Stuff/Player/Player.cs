@@ -315,7 +315,7 @@ public class Player : NetworkBehaviour {
     [SerializeField] private ProfileDatabase _profiles;
     [SerializeField] private Transform _visualHolder;
 
-    public ClassVisuals visual { get; set; }
+    public PlayerVisuals visual { get; set; }
 
     void SetProfile(string profileName) {
         _currentProfile = _profiles.GetProfileByName(profileName);
@@ -326,7 +326,7 @@ public class Player : NetworkBehaviour {
             Destroy(visual.gameObject);
         }
 
-        visual = Instantiate(_currentProfile.classPrefab, _visualHolder);
+        visual = Instantiate(_currentProfile.PlayerPrefab, _visualHolder);
         // Update class visuals
     }
 

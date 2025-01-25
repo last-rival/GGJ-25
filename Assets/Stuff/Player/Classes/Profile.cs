@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum ClassType {
     Default,
@@ -44,6 +45,6 @@ public class Profile : ScriptableObject {
     public float thrusterDropThreshold = 10;
 
     [Header("Visuals")]
-    public ClassVisuals classPrefab;
+    public PlayerVisuals PlayerPrefab;
 
 }

@@ -1,1 +1,2 @@
-- Import the bubbles.
+- Shrinking bubble.
+- Dropping thrusters.

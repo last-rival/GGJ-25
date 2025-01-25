@@ -12,7 +12,7 @@ GameObject:
   m_Layer: 3
   m_Name: Projectile Spawn Point
   m_TagString: Untagged
-  m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 7148428337604731935, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 625619778766302532}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.98, y: -0.23, z: 0}
+  m_LocalPosition: {x: 6.98, y: 0.28, z: 0}
   m_LocalScale: {x: 1.8727645, y: 1.8727645, z: 1.8727645}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 2911829727005544525}
   - component: {fileID: 9203025571450621203}
   m_Layer: 3
-  m_Name: Sphere
+  m_Name: Bubble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,10 +58,11 @@ Transform:
   m_GameObject: {fileID: 1966181287723848415}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2.25}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1474490743245199407}
   m_Father: {fileID: 3555538494157350193}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2911829727005544525
@@ -92,7 +93,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 396a203ded062384bb532f003a316cd1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128,10 +129,10 @@ GameObject:
   m_Layer: 3
   m_Name: Thruster
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 3306451490063965843, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1474490743245199407
 Transform:
   m_ObjectHideFlags: 0
@@ -140,12 +141,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035576120104013911}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.508, y: 0, z: 0}
+  m_LocalScale: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3555538494157350193}
+  m_Father: {fileID: 3546669669493210893}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &3272905453699521593
 ParticleSystem:
@@ -4977,7 +4978,6 @@ Transform:
   m_Children:
   - {fileID: 3396341678259907884}
   - {fileID: 3546669669493210893}
-  - {fileID: 1474490743245199407}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!58 &4597970139678324398
@@ -5014,7 +5014,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 1.5
 --- !u!114 &5347106516115325317
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5056,8 +5056,8 @@ Transform:
   m_GameObject: {fileID: 8636552447732092181}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.178, z: 0}
-  m_LocalScale: {x: 0.37566477, y: 0.37566477, z: 0.37566477}
+  m_LocalPosition: {x: 0.063, y: -0.042, z: 0}
+  m_LocalScale: {x: 0.2522226, y: 0.2522226, z: 0.2522226}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5814609407985678039}
