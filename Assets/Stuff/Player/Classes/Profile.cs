@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum ClassType {
     Default,
@@ -43,7 +44,10 @@ public class Profile : ScriptableObject {
     public float thrusterCostPerSec = 1;
 
     [Range(0.1f, 100)]
-    public float thrusterPower = 1;
+    public float thrusterMaxPower = 20;
+
+    [Range(0.1f, 10)]
+    public float fullThrustTime = 2;
 
     [Range(0, 100)]
     public float thrusterDropThreshold = 10;

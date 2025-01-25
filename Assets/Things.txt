@@ -3,3 +3,6 @@
 - Add lazer pointer for where the bubble will flow.
 - Add air vents and stuff to spice up the game.
 - Add physics to the game
+
+- Add Boosters.
+- Health Bars.

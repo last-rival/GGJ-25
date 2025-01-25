@@ -23,7 +23,8 @@ MonoBehaviour:
   projectileHitPoints: 5
   fireCooldown: 1
   thrusterCostPerSec: 1
-  thrusterPower: 1
+  thrusterMaxPower: 20
+  fullThrustTime: 2
   thrusterDropThreshold: 10
   rotationSpeed: 240
   classPrefab: {fileID: 5347106516115325317, guid: 844ea694e289e77499bc27034f4377fc,

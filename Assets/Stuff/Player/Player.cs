@@ -65,8 +65,6 @@ public class Player : NetworkBehaviour {
         var direction = cursorWorldPos - playerPos;
         var angle = Vector2.SignedAngle(Vector2.right, direction.normalized);
         zLook = angle;
-
-        Debug.DrawRay(playerPos, direction, Color.red);
     }
 
     private void ProcessKeyPress(NetworkInputData data) {
@@ -84,6 +82,14 @@ public class Player : NetworkBehaviour {
 
         if (data.buttons.WasReleased(_previousButtons, ActionButtons.FireAlt)) {
             ProcessFireAltReleased();
+        }
+
+        if (data.buttons.WasPressed(_previousButtons, ActionButtons.Jump)) {
+            ProcessJumpPressed();
+        }
+
+        if (data.buttons.WasReleased(_previousButtons, ActionButtons.Jump)) {
+            ProcessJumpReleased();
         }
 
         if (isFireHeld) {
@@ -125,12 +131,22 @@ public class Player : NetworkBehaviour {
     }
 
     private void ProcessAltFire() {
-        //print($"Fire Alt is held down. {Runner.Tick}");
+        if (Object.HasStateAuthority == false) {
+            return;
+        }
+
+        EngageThrusters();
     }
 
     private void ProcessFireAltReleased() {
         //print($"Fire Alt was released. {Runner.Tick}");
         isFireAltHeld = false;
+
+        if (Object.HasInputAuthority == false) {
+            return;
+        }
+
+        DisengageThrusters();
     }
 
     private void ProcessJumpPressed() {
@@ -139,7 +155,7 @@ public class Player : NetworkBehaviour {
     }
 
     private void ProcessJump() {
-        //print($"Jump is held down. {Runner.Tick}");
+        //print($"Jump is held. {Runner.Tick}");
     }
 
     private void ProcessJumpReleased() {
@@ -181,6 +197,20 @@ public class Player : NetworkBehaviour {
             });
 
         return true;
+    }
+
+    private float power = 0;
+
+    public void EngageThrusters() {
+        var rb = _rigidbody2D.Rigidbody;
+        power += _currentProfile.fullThrustTime;
+        power = Mathf.Min(_currentProfile.thrusterMaxPower, power);
+        var direction = classVisuals.transform.right;
+        rb.AddForce(direction * power, ForceMode2D.Force);
+    }
+
+    public void DisengageThrusters() {
+        power = 0;
     }
 
     public void Hit(PlayerRef owner, float damage) {

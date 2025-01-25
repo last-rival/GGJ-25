@@ -7,7 +7,6 @@ using UnityEngine;
 public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCallbacks {
 
     [SerializeField] private Camera _camera;
-    [SerializeField] private GameObject _tempLocator;
 
     private NetworkInputData _accumulatedInput;
     private bool _resetInput;
@@ -21,7 +20,6 @@ public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCall
 
         var cursorWorldPos = _camera.ScreenToWorldPoint(Input.mousePosition);
         cursorWorldPos.z = 0;
-        _tempLocator.transform.position = cursorWorldPos;
         _accumulatedInput.cursorPosition = cursorWorldPos;
 
         NetworkButtons buttonsPressed = default;
