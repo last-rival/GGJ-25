@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
@@ -11,7 +12,8 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     [SerializeField] private Transform[] _spawnPositions;
     [SerializeField] private UIManager _uiManager;
 
-    public static string _profileName;
+    [FormerlySerializedAs("_profileName")]
+    public string profileName;
 
     public async void StartGame(GameMode gameMode) {
         _networkRunner.ProvideInput = true;
@@ -35,7 +37,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
 
     public void SetCurrentPlayer(string className) {
-        _profileName = className;
+        profileName = className;
     }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {

@@ -15,7 +15,10 @@ public class Player : NetworkBehaviour {
         InitUI();
 
         if (Object.HasInputAuthority) {
-            RpcChangeClassTo(GameRunner._profileName);
+            RpcChangeClassTo(FindObjectOfType<GameRunner>().profileName);
+        }
+        else {
+            SetProfile(profileName.ToString());
         }
 
         if (Runner.IsClient) {
@@ -35,8 +38,20 @@ public class Player : NetworkBehaviour {
                     SetProfile(profileName.ToString());
 
                     break;
+
+                case nameof(hitPoints):
+                    DoHitEffects(hitPoints);
+
+                    break;
+
+                case nameof(airCapacity):
+                    DoAirEffects(airCapacity);
+
+                    break;
             }
         }
+
+        DoReloadFill();
 
         if (Object != null && Object.IsValid &&  Object.HasInputAuthority) {
             UpdateUI();
@@ -185,6 +200,9 @@ public class Player : NetworkBehaviour {
     [Networked] private float hitPoints { get; set; }
     private float maxHitPoints;
 
+    [Networked] private float airCapacity { get; set; }
+    private float maxAirCapacity;
+
     public bool TryShootProjectile() {
         var timeDelta = Time.time - lastShotTime;
 
@@ -215,7 +233,8 @@ public class Player : NetworkBehaviour {
 
     public void EngageThrusters() {
         var rb = _rigidbody2D.Rigidbody;
-        power += _currentProfile.fullThrustTime;
+        var powerPerSec = _currentProfile.thrusterMaxPower / _currentProfile.fullThrustTime;
+        power += powerPerSec * Runner.DeltaTime;
         power = Mathf.Min(_currentProfile.thrusterMaxPower, power);
         var direction = classVisuals.transform.right;
         rb.AddForce(direction * power, ForceMode2D.Force);
@@ -243,6 +262,28 @@ public class Player : NetworkBehaviour {
             print($"Player {Object.InputAuthority} has died in the battle field.");
             Runner.Despawn(Object);
         }
+    }
+
+    private void DoHitEffects(float currHealth) {
+        _canvas.SetHp(currHealth / maxHitPoints);
+
+        if (currHealth == 0) {
+            print("Dead VFX play");
+        }
+        else {
+            print("Hit VFX play");
+        }
+    }
+
+    private void DoAirEffects(float airCapacity) {
+        var fill = airCapacity / maxAirCapacity;
+        _canvas.SetAirLeft(fill);
+    }
+
+    private void DoReloadFill() {
+        var elapsedTime = Time.time - lastShotTime;
+        var fill = elapsedTime / _currentProfile.fireCooldown;
+        _canvas.SetFireCooldown(fill);
     }
 
     #endregion

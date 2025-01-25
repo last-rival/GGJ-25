@@ -41,37 +41,40 @@ public class Projectile : NetworkBehaviour {
             return;
         }
 
-        ProcessHit(collision.collider.attachedRigidbody);
+        var hit = TryHit(collision.collider.attachedRigidbody);
 
         hitPoints--;
 
-        if (hitPoints == 0) {
+        if (hitPoints == 0 || hit) {
+            // Spawn a pop VFX.
             Runner.Despawn(Object);
         }
     }
 
-    void ProcessHit(Rigidbody2D rb) {
+    bool TryHit(Rigidbody2D rb) {
         if (Object.HasStateAuthority == false) {
-            return;
+            return false;
         }
 
         if (rb == null) {
-            return;
+            return false;
         }
 
         var player = rb.GetComponent<Player>();
 
         if (player == null) {
-            return;
+            return false;
         }
 
         if (player.Object.InputAuthority == owner) {
             if (maxHitPoints == hitPoints) {
-                return;
+                return false;
             }
         }
 
         player.Hit(owner, damage);
+
+        return true;
     }
 
 }

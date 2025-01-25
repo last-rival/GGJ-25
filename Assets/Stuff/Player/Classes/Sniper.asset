@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Sniper
   m_EditorClassIdentifier: 
   projectileSize: 0.7
-  projectileSpeed: 10
+  projectileSpeed: 18
   projectileDamage: 60
-  projectileHitPoints: 3
+  projectileHitPoints: 4

@@ -1,9 +1,5 @@
-- Add player controls.
-- Decide to do 2D or 3D.
-- Add lazer pointer for where the bubble will flow.
-- Add air vents and stuff to spice up the game.
-- Add physics to the game
-
-- Add player profiles.
-- Load game with selected profile.
-- Show entering battle as message.
+- Add thruster visual.
+- Add player UI.
+- Import the bubbles.
+- Get Spine working somehow.
+- Update projectile of get data from database.
