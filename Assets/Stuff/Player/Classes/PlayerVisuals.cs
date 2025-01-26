@@ -9,6 +9,11 @@ public class PlayerVisuals : MonoBehaviour {
 
     private Vector3 startScale;
 
+    [SerializeField]
+    private AudioSource _sfxPlayer;
+
+    [SerializeField] private AudioClip[] _clips;
+
     [SerializeField] private GameObject thrusterVFX;
 
     public void SetThrusterActive(bool active) {
@@ -24,8 +29,15 @@ public class PlayerVisuals : MonoBehaviour {
             return;
         }
 
+        PlayClipAtIndex(0, 0.4f);
         thruster.gameObject.SetActive(false);
         // Play thruster VFX.
+    }
+
+    public void PlayClipAtIndex(int index, float volume) {
+        _sfxPlayer.clip = _clips[index];
+        _sfxPlayer.volume = volume;
+        _sfxPlayer.Play();
     }
 
 }

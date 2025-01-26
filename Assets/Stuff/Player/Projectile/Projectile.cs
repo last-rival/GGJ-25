@@ -41,6 +41,7 @@ public class Projectile : NetworkBehaviour {
             return;
         }
 
+
         if (Object.HasStateAuthority == false) {
             return;
         }
@@ -54,13 +55,12 @@ public class Projectile : NetworkBehaviour {
             // Spawn a pop VFX.
             Runner.Despawn(Object);
         }
+        else {
+            RpcPlayBounceSFX();
+        }
     }
 
     bool TryHitPlayer(Rigidbody2D rb) {
-        if (Object.HasStateAuthority == false) {
-            return false;
-        }
-
         if (rb == null) {
             return false;
         }
@@ -83,10 +83,6 @@ public class Projectile : NetworkBehaviour {
     }
 
     bool TryHitProjectile(Rigidbody2D rb) {
-        if (Object.HasStateAuthority == false) {
-            return false;
-        }
-
         if (rb == null) {
             return false;
         }
@@ -98,7 +94,14 @@ public class Projectile : NetworkBehaviour {
         }
 
         Runner.Despawn(projectile.Object);
+
         return true;
+    }
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RpcPlayBounceSFX() {
+        FindObjectOfType<AudioManager>().PlayBounce();
     }
 
 }

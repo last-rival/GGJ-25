@@ -197,11 +197,19 @@ public class Player : NetworkBehaviour {
         isJumpHeld = false;
     }
 
-
     private void OnCollisionEnter2D(Collision2D other) {
-        if (other.gameObject.CompareTag("Player")) {
-            print("Hit a player");
+        if (Object == null || Object.IsValid == false) {
+            return;
         }
+
+        if (Object.HasStateAuthority) {
+            RpcPlayBounceSFX();
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RpcPlayBounceSFX() {
+        FindObjectOfType<AudioManager>().PlayBounce();
     }
 
     #region Warfare
