@@ -27,6 +27,12 @@ public class Player : NetworkBehaviour {
         }
     }
 
+    public override void Despawned(NetworkRunner runner, bool hasState) {
+        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
+        var ui = FindObjectOfType<UIManager>();
+        ui?.AnnounceMessage($"{_currentProfile.name} has perished");
+    }
+
     public override void Render() {
         foreach (var change in changeDetector.DetectChanges(this)) {
             switch (change) {
@@ -367,15 +373,6 @@ public class Player : NetworkBehaviour {
     }
 
     private void KillPlayer() {
-        RpcKillPlayer();
-    }
-
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public  void RpcKillPlayer() {
-        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
-        var ui = FindObjectOfType<UIManager>();
-        ui.AnnounceMessage($"{_currentProfile.name} has perished");
-
         if (Object.HasStateAuthority) {
             Runner.Despawn(Object);
         }

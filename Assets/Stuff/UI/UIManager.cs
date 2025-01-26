@@ -100,4 +100,8 @@ public class UIManager : MonoBehaviour {
         _announcementMessage.SetText(message);
     }
 
+    public void SetRoomName(string roomName) {
+        FindObjectOfType<GameRunner>().roomName = roomName;
+    }
+
 }

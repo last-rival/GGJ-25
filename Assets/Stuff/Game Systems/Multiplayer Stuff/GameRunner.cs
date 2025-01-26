@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
@@ -13,8 +12,8 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     [SerializeField] private Transform[] _spawnPositions;
     [SerializeField] private UIManager _uiManager;
 
-    [FormerlySerializedAs("_profileName")]
     public string profileName;
+    public string roomName = "Bloop";
 
     public async void StartGame(GameMode gameMode) {
         _networkRunner.ProvideInput = true;
@@ -28,7 +27,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
         await _networkRunner.StartGame(new StartGameArgs {
             GameMode = gameMode,
-            SessionName = "TestRoom",
+            SessionName = roomName,
             Scene = scene,
             SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>(),
         });

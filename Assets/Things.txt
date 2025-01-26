@@ -1,5 +1,3 @@
 - SFX ->
 - VFX -> Projectile <-> Projectile.
 - Banters.
-- Adjust move speed.
-- Add custom rooms.
