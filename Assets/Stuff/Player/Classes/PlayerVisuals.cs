@@ -29,9 +29,8 @@ public class PlayerVisuals : MonoBehaviour {
             return;
         }
 
-        PlayClipAtIndex(0, 0.4f);
+        PlayClipAtIndex(0, 1);
         thruster.gameObject.SetActive(false);
-        // Play thruster VFX.
     }
 
     public void PlayClipAtIndex(int index, float volume) {

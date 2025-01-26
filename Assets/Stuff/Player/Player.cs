@@ -305,13 +305,6 @@ public class Player : NetworkBehaviour {
             return;
         }
 
-        if (owner == Object.InputAuthority) {
-            print($"Let it be known that this smart ass were nicked by their own bubble for {damage}");
-        }
-        else {
-            print($"Woah buddy... good shot! Worth {damage}");
-        }
-
         hitPoints = Mathf.Max(0, hitPoints - damage);
 
         if (Mathf.Approximately(hitPoints, 0)) {

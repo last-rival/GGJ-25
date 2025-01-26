@@ -12,6 +12,7 @@ public class Projectile : NetworkBehaviour {
     [SerializeField] private Rigidbody2D _rigidbody;
     [SerializeField] private ProfileDatabase _profileDatabase;
     [SerializeField] private HitVFX _hitVFX;
+    [SerializeField] private GameObject _projectileKillVFX;
 
     private ProjectileData _data;
 
@@ -34,6 +35,10 @@ public class Projectile : NetworkBehaviour {
         }
     }
 
+    public override void Despawned(NetworkRunner runner, bool hasState) {
+        Instantiate(_projectileKillVFX, transform.position, Quaternion.identity);
+    }
+
     public override void FixedUpdateNetwork() {
     }
 
@@ -48,6 +53,7 @@ public class Projectile : NetworkBehaviour {
         }
 
         var hit = TryHitPlayer(collision.collider.attachedRigidbody);
+
         if (hit) {
             RpcPlayHitVFX(collision.contacts[0].point, _data.projectileDamage);
         }

@@ -4,10 +4,15 @@ public class AudioManager : MonoBehaviour {
 
     [SerializeField] private AudioSource[] _sfxPlayers;
     [SerializeField] private AudioClip _bounce;
+    [SerializeField] private AudioClip _pop;
     int _sfxIndex;
 
     public void PlayBounce() {
         PlayClip(_bounce, 1);
+    }
+
+    public void PlayPop() {
+        PlayClip(_pop, 0.7f);
     }
 
     public void PlayClip(AudioClip clip, float volume) {

@@ -41,6 +41,10 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     private void Update() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Application.Quit();
+        }
+
         if (isLevelRestarting) {
             return;
         }
