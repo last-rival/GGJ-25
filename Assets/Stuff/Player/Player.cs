@@ -7,6 +7,7 @@ public class Player : NetworkBehaviour {
     [SerializeField] private NetworkRigidbody2D _rigidbody2D;
     [SerializeField] private Projectile _projectilePrefab;
     [SerializeField] private PlayerStatusUI _canvas;
+    [SerializeField] private GameObject _deathFX;
 
     ChangeDetector changeDetector { get; set; }
 
@@ -162,6 +163,7 @@ public class Player : NetworkBehaviour {
     private void ProcessFireAltPressed() {
         //print($"Fire Alt Main Pressed. {Runner.Tick}");
         isFireAltHeld = true;
+        thrustersEngaged = true;
     }
 
     private void ProcessAltFire() {
@@ -175,6 +177,7 @@ public class Player : NetworkBehaviour {
     private void ProcessFireAltReleased() {
         //print($"Fire Alt was released. {Runner.Tick}");
         isFireAltHeld = false;
+        thrustersEngaged = false;
 
         if (Object.HasInputAuthority == false) {
             return;
@@ -199,6 +202,10 @@ public class Player : NetworkBehaviour {
 
     private void OnCollisionEnter2D(Collision2D other) {
         if (Object == null || Object.IsValid == false) {
+            return;
+        }
+
+        if (other.collider.attachedRigidbody?.GetComponent<Projectile>()) {
             return;
         }
 
@@ -251,7 +258,7 @@ public class Player : NetworkBehaviour {
             });
 
         if (airCapacity == 0) {
-            Runner.Despawn(Object);
+            KillPlayer();
         }
 
         return true;
@@ -302,8 +309,7 @@ public class Player : NetworkBehaviour {
         hitPoints = Mathf.Max(0, hitPoints - damage);
 
         if (Mathf.Approximately(hitPoints, 0)) {
-            print($"Player {Object.InputAuthority} has died in the battle field.");
-            Runner.Despawn(Object);
+            KillPlayer();
         }
     }
 
@@ -313,13 +319,6 @@ public class Player : NetworkBehaviour {
         }
 
         _canvas.SetHp(currHealth / maxHitPoints);
-
-        if (currHealth == 0) {
-            print("Dead VFX play");
-        }
-        else {
-            print("Hit VFX play");
-        }
     }
 
     private void DoThrusterEffects(bool engaged) {
@@ -367,9 +366,24 @@ public class Player : NetworkBehaviour {
         _canvas.SetFireCooldown(fill);
     }
 
+    private void KillPlayer() {
+        RpcKillPlayer();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public  void RpcKillPlayer() {
+        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
+        var ui = FindObjectOfType<UIManager>();
+        ui.AnnounceMessage($"{_currentProfile.name} has perished");
+
+        if (Object.HasStateAuthority) {
+            Runner.Despawn(Object);
+        }
+    }
+
     #endregion
 
-    #region  Classes
+    #region  Profile
 
     [Networked] private NetworkString<_16> profileName { get; set; }
 
@@ -398,8 +412,7 @@ public class Player : NetworkBehaviour {
         }
 
         visual = Instantiate(_currentProfile.PlayerPrefab, _visualHolder);
-        //_canvas = visual.statusUI;
-        // Update class visuals
+        FindObjectOfType<UIManager>().AnnounceMessage($"{_currentProfile.Name} has arrived as a Brawler!");
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]

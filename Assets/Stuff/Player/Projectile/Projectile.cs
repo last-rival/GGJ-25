@@ -11,6 +11,7 @@ public class Projectile : NetworkBehaviour {
     [Networked] public PlayerRef owner { get; set; }
     [SerializeField] private Rigidbody2D _rigidbody;
     [SerializeField] private ProfileDatabase _profileDatabase;
+    [SerializeField] private HitVFX _hitVFX;
 
     private ProjectileData _data;
 
@@ -47,6 +48,10 @@ public class Projectile : NetworkBehaviour {
         }
 
         var hit = TryHitPlayer(collision.collider.attachedRigidbody);
+        if (hit) {
+            RpcPlayHitVFX(collision.contacts[0].point, _data.projectileDamage);
+        }
+
         hit = hit || TryHitProjectile(collision.collider.attachedRigidbody);
 
         hitPoints--;
@@ -102,6 +107,11 @@ public class Projectile : NetworkBehaviour {
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RpcPlayBounceSFX() {
         FindObjectOfType<AudioManager>().PlayBounce();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RpcPlayHitVFX(Vector2 position, float damage) {
+        Instantiate(_hitVFX, position, Quaternion.identity).Init(damage);
     }
 
 }

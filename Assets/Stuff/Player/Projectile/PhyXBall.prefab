@@ -73,6 +73,7 @@ MonoBehaviour:
   _hitPoints: 0
   _rigidbody: {fileID: 7519040008579294057}
   _profileDatabase: {fileID: 11400000, guid: 141cb162df0eedb4ab6a41b1cd29431b, type: 2}
+  _hitVFX: {fileID: 8573908486377326185, guid: 9775aeea0d9d5be4ba81684c775b5e58, type: 3}
 --- !u!50 &7519040008579294057
 Rigidbody2D:
   serializedVersion: 4

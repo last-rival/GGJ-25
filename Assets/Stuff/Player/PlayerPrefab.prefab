@@ -359,6 +359,8 @@ MonoBehaviour:
   _projectilePrefab: {fileID: 1480968991772132406, guid: bb0d31dc91b22bb489bd4d9f19a62d56,
     type: 3}
   _canvas: {fileID: 6946239239060788485}
+  _deathFX: {fileID: 8410706697024927701, guid: 06f874d01e3cc81469ff918c852b82a1,
+    type: 3}
   _zLook: 0
   _hitPoints: 0
   _airCapacity: 0

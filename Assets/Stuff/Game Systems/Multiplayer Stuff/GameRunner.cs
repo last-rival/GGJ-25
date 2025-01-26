@@ -2,6 +2,7 @@ using Fusion;
 using Fusion.Sockets;
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -38,6 +39,26 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     public void SetCurrentPlayer(string className) {
         profileName = className;
+    }
+
+    private void Update() {
+        if (isLevelRestarting) {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R)) {
+            isLevelRestarting = true;
+            RestartLevel();
+        }
+    }
+
+    private bool isLevelRestarting;
+
+    async void RestartLevel() {
+        FindObjectOfType<UIManager>().AnnounceMessage("Restarting game...");
+        await _networkRunner.Shutdown();
+        DOTween.KillAll();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
