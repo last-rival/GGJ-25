@@ -11,6 +11,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private Transform[] _spawnPositions;
     [SerializeField] private UIManager _uiManager;
+    [SerializeField] private Botshot _botshotPrefab;
 
     public string profileName;
     public string roomName = "Bloop";
@@ -23,6 +24,10 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
         if (scene.IsValid) {
             sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
+        }
+
+        if (gameMode == GameMode.Single) {
+            roomName = "Bot";
         }
 
         await _networkRunner.StartGame(new StartGameArgs {
@@ -75,6 +80,11 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
         // TODO : Let other game systems know that a player has joined the arena.
         if (player == runner.LocalPlayer) {
             _uiManager.SetHudScreen();
+        }
+
+        if (runner.IsSinglePlayer) {
+            Instantiate(_botshotPrefab, _spawnPositions[1].position, Quaternion.identity);
+            _botshotPrefab.SetTarget(_spawnedCharacters[player].GetBehaviour<Player>());
         }
     }
 

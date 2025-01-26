@@ -366,6 +366,14 @@ public class Player : NetworkBehaviour {
     }
 
     private void KillPlayer() {
+        if (Runner.IsSinglePlayer) {
+            Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
+            var ui = FindObjectOfType<UIManager>();
+            ui?.AnnounceMessage($"{_currentProfile.name} has fed botshot.");
+            SetProfile(_currentProfile.name);
+            return;
+        }
+
         if (Object.HasStateAuthority) {
             Runner.Despawn(Object);
         }

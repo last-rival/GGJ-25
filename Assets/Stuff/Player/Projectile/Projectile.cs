@@ -16,10 +16,13 @@ public class Projectile : NetworkBehaviour {
 
     private ProjectileData _data;
 
-    public void Init(Vector2 velocity, PlayerRef owner, NetworkString<_16> profileName) {
+    private bool isBotShot;
+
+    public void Init(Vector2 velocity, PlayerRef owner, NetworkString<_16> profileName, bool isBotShot = false) {
         _rigidbody.velocity = velocity;
         this.owner = owner;
         this.profileName = profileName;
+        this.isBotShot = isBotShot;
     }
 
     public override void Spawned() {
@@ -43,6 +46,7 @@ public class Projectile : NetworkBehaviour {
     }
 
     void OnCollisionEnter2D(Collision2D collision) {
+
         if (Object == null || Object.IsValid == false) {
             return;
         }
@@ -53,6 +57,10 @@ public class Projectile : NetworkBehaviour {
         }
 
         var hit = TryHitPlayer(collision.collider.attachedRigidbody);
+
+        if (Runner.IsSinglePlayer) {
+            hit = hit || TryHitBot(collision.collider.attachedRigidbody);
+        }
 
         if (hit) {
             RpcPlayHitVFX(collision.contacts[0].point, _data.projectileDamage);
@@ -107,6 +115,27 @@ public class Projectile : NetworkBehaviour {
         Runner.Despawn(projectile.Object);
 
         return true;
+    }
+
+    bool TryHitBot(Rigidbody2D rb) {
+        if (rb == null) {
+            return false;
+        }
+
+        var botshot = rb.GetComponent<Botshot>();
+
+        if (botshot == null) {
+            return false;
+        }
+
+        if (isBotShot && hitPoints == maxHitPoints) {
+            return false;
+        }
+
+        botshot.Hit(owner, _data.projectileDamage);
+
+        return true;
+
     }
 
 

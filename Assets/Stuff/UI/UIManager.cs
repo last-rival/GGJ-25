@@ -80,6 +80,10 @@ public class UIManager : MonoBehaviour {
         SetConnectingScreen();
     }
 
+    public void StartBotGame() {
+        _runner.StartGame(GameMode.Single);
+    }
+
     public void SelectProfile(string name) {
         _characterSelectMessage.SetText($"Bubble Brawling as {name}");
 
