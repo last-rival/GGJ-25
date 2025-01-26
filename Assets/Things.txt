@@ -1,4 +1,5 @@
-- Shrinking bubble.
-- Dropping thrusters.
 - Network state announcer.
 - Victory sequence.
+- SFX -> Inprogress.
+- VFX.
+- Banters.

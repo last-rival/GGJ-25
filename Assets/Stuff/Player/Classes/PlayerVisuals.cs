@@ -5,6 +5,7 @@ public class PlayerVisuals : MonoBehaviour {
     public Transform projectileSpawnPoint;
     public Transform bubble;
     public GameObject thruster;
+    public PlayerStatusUI statusUI;
 
     private Vector3 startScale;
 
@@ -16,6 +17,15 @@ public class PlayerVisuals : MonoBehaviour {
 
     public void SetScale(Vector3 scale) {
         bubble.localScale = scale;
+    }
+
+    public void DropThruster() {
+        if (thruster.gameObject.activeSelf == false) {
+            return;
+        }
+
+        thruster.gameObject.SetActive(false);
+        // Play thruster VFX.
     }
 
 }

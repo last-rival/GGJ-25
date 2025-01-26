@@ -45,7 +45,8 @@ public class Projectile : NetworkBehaviour {
             return;
         }
 
-        var hit = TryHit(collision.collider.attachedRigidbody);
+        var hit = TryHitPlayer(collision.collider.attachedRigidbody);
+        hit = hit || TryHitProjectile(collision.collider.attachedRigidbody);
 
         hitPoints--;
 
@@ -55,7 +56,7 @@ public class Projectile : NetworkBehaviour {
         }
     }
 
-    bool TryHit(Rigidbody2D rb) {
+    bool TryHitPlayer(Rigidbody2D rb) {
         if (Object.HasStateAuthority == false) {
             return false;
         }
@@ -78,6 +79,25 @@ public class Projectile : NetworkBehaviour {
 
         player.Hit(owner, _data.projectileDamage);
 
+        return true;
+    }
+
+    bool TryHitProjectile(Rigidbody2D rb) {
+        if (Object.HasStateAuthority == false) {
+            return false;
+        }
+
+        if (rb == null) {
+            return false;
+        }
+
+        var projectile = rb.GetComponent<Projectile>();
+
+        if (projectile == null || projectile.Object == null || projectile.Object.IsValid == false) {
+            return false;
+        }
+
+        Runner.Despawn(projectile.Object);
         return true;
     }
 

@@ -48,15 +48,25 @@ public class Player : NetworkBehaviour {
                     DoAirEffects(airCapacity);
 
                     break;
+
+                case nameof(thrustersEngaged):
+                    DoThrusterEffects(thrustersEngaged);
+
+                    break;
             }
         }
-
-        DoReloadFill();
-        DoThrusterEffects();
 
         if (Object != null && Object.IsValid &&  Object.HasInputAuthority) {
             UpdateUI();
         }
+    }
+
+    private void Update() {
+        if (visual == null) {
+            return;
+        }
+
+        DoReloadFill();
     }
 
     private void SetLook(float lookAngle) {
@@ -196,7 +206,7 @@ public class Player : NetworkBehaviour {
 
     #region Warfare
 
-    float lastShotTime;
+    [Networked] private TickTimer lastShotTimer { get; set; }
 
     [field: SerializeField]
     [Networked] private float hitPoints { get; set; }
@@ -207,9 +217,7 @@ public class Player : NetworkBehaviour {
     private float maxAirCapacity;
 
     public bool TryShootProjectile() {
-        var timeDelta = Time.time - lastShotTime;
-
-        if (timeDelta < _currentProfile.fireCooldown) {
+        if (lastShotTimer.ExpiredOrNotRunning(Runner) == false) {
             return false;
         }
 
@@ -217,7 +225,7 @@ public class Player : NetworkBehaviour {
             return false;
         }
 
-        lastShotTime = Time.time;
+        lastShotTimer = TickTimer.CreateFromSeconds(Runner, _currentProfile.fireCooldown);
 
         var remainingAir = airCapacity - _currentProfile.fireCost;
         airCapacity = Mathf.Max(0, remainingAir);
@@ -228,7 +236,7 @@ public class Player : NetworkBehaviour {
         Runner.Spawn(_projectilePrefab, visual.projectileSpawnPoint.position, Quaternion.identity, Object.InputAuthority,
             onBeforeSpawned: (_, o) => {
                 o.GetBehaviour<Projectile>().Init(
-                    velocity: facingDir * (_currentProfile.projectileData.projectileSpeed + _rigidbody2D.Rigidbody.velocity.magnitude),
+                    velocity: facingDir * _currentProfile.projectileData.projectileSpeed,
                     owner: Object.InputAuthority,
                     profileName: profileName
                 );
@@ -242,13 +250,18 @@ public class Player : NetworkBehaviour {
     }
 
     private float power = 0;
+    [Networked]
+    private bool thrustersEngaged { get; set; }
 
     public void EngageThrusters() {
         if (airCapacity <= _currentProfile.thrusterFailureThreshold) {
             power = 0;
+            thrustersEngaged = false;
 
             return;
         }
+
+        thrustersEngaged = true;
 
         var cost = _currentProfile.thrusterCostPerSec * Runner.DeltaTime;
         airCapacity -= cost;
@@ -263,6 +276,7 @@ public class Player : NetworkBehaviour {
 
     public void DisengageThrusters() {
         power = 0;
+        thrustersEngaged = false;
     }
 
     public void Hit(PlayerRef owner, float damage) {
@@ -286,6 +300,10 @@ public class Player : NetworkBehaviour {
     }
 
     private void DoHitEffects(float currHealth) {
+        if (_canvas == null) {
+            return;
+        }
+
         _canvas.SetHp(currHealth / maxHitPoints);
 
         if (currHealth == 0) {
@@ -296,18 +314,12 @@ public class Player : NetworkBehaviour {
         }
     }
 
-    private void DoThrusterEffects() {
+    private void DoThrusterEffects(bool engaged) {
         if (visual == null) {
             return;
         }
 
-        if (Mathf.Approximately(power, 0)) {
-            visual.SetThrusterActive(false);
-
-            return;
-        }
-
-        visual.SetThrusterActive(true);
+        visual.SetThrusterActive(engaged);
     }
 
     private void DoAirEffects(float airCapacity) {
@@ -324,16 +336,26 @@ public class Player : NetworkBehaviour {
         var scale = Mathf.Lerp(min, max, fill);
         visual.SetScale(origScale * scale);
 
+        if (Object.HasInputAuthority == false) {
+            return;
+        }
+
         if (airCapacity < _currentProfile.thrusterFailureThreshold) {
-            // Show VFX of the thruster basting off.
-            visual.thruster.SetActive(false);
+            if (visual.thruster.activeSelf) {
+                visual.DropThruster();
+                RpcDropThruster();
+            }
         }
 
     }
 
     private void DoReloadFill() {
-        var elapsedTime = Time.time - lastShotTime;
-        var fill = elapsedTime / _currentProfile.fireCooldown;
+        if (_canvas == null) {
+            return;
+        }
+
+        var elapsedTime = lastShotTimer.RemainingTime(Runner).GetValueOrDefault(0);
+        var fill = (_currentProfile.fireCooldown - elapsedTime) / _currentProfile.fireCooldown;
         _canvas.SetFireCooldown(fill);
     }
 
@@ -352,6 +374,7 @@ public class Player : NetworkBehaviour {
     public PlayerVisuals visual { get; set; }
 
     void SetProfile(string profileName) {
+        this.profileName = profileName;
         _currentProfile = _profiles.GetProfileByName(profileName);
 
         hitPoints = _currentProfile.maxHp;
@@ -360,18 +383,29 @@ public class Player : NetworkBehaviour {
         airCapacity = _currentProfile.maxAir;
         maxAirCapacity = airCapacity;
 
+        thrustersEngaged = false;
+
         if (visual != null) {
             Destroy(visual.gameObject);
         }
 
         visual = Instantiate(_currentProfile.PlayerPrefab, _visualHolder);
+        //_canvas = visual.statusUI;
         // Update class visuals
     }
-
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     public void RpcChangeClassTo(NetworkString<_16> className) {
         SetProfile(className.ToString());
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    public void RpcDropThruster() {
+        if (visual == null) {
+            return;
+        }
+
+        visual.DropThruster();
     }
 
     #endregion
