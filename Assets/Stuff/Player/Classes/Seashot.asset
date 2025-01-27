@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Seashot
   m_EditorClassIdentifier: 
   Name: Seashot
-  id: 0
   maxHp: 120
   maxAir: 120
   maxSize: 1
@@ -21,8 +20,8 @@ MonoBehaviour:
   fireCost: 6
   fireCooldown: 1.8
   projectileData: {fileID: 11400000, guid: 528a2e83cd6ff65408713aff75feabbe, type: 2}
-  thrusterCostPerSec: 2
-  thrusterMaxPower: 8
+  thrusterCostPerSec: 1
+  thrusterMaxPower: 20
   fullThrustTime: 0.25
   thrusterFailureThreshold: 18
   PlayerPrefab: {fileID: 7623296805364313604, guid: df7acedc45a0a7f4e907720340568ea6,

@@ -52,10 +52,6 @@ public class Botshot : MonoBehaviour {
     }
 
     private void Update() {
-        if (_target == null) {
-            return;
-        }
-
         LookAndShoot();
     }
 
@@ -78,12 +74,16 @@ public class Botshot : MonoBehaviour {
             return;
         }
 
+        if (_target == null || _target.IsDead) {
+            _rotationRoot.Rotate(Vector3.forward, turnRatePerSecond * Time.deltaTime);
+            _visuals.SetThrusterActive(true);
+            return;
+        }
+
         var elapsedTime = Time.time - lastShotTime;
         var targetVector =  _target.transform.position - transform.position;
         var angleDelta = Vector2.SignedAngle(_rotationRoot.right, targetVector);
         var absAngleDelta = Mathf.Abs(angleDelta);
-
-        Debug.DrawRay(_rotationRoot.position, _rotationRoot.right, Mathf.Sign(angleDelta) > 0 ? Color.red : Color.green);
 
         if (absAngleDelta > 3f) {
             var rotationPerSec = turnRatePerSecond * Time.deltaTime * Mathf.Sign(angleDelta);

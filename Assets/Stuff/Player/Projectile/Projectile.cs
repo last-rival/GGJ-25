@@ -95,7 +95,7 @@ public class Projectile : NetworkBehaviour {
             }
         }
 
-        player.Hit(owner, _data.projectileDamage);
+        player.Hit(isBotShot ? owner : PlayerRef.None, _data.projectileDamage);
 
         return true;
     }

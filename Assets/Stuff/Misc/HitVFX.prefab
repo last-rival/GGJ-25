@@ -108,8 +108,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4282981631
-  m_fontColor: {r: 1, g: 0.10849059, b: 0.28788948, a: 1}
+    rgba: 4280156415
+  m_fontColor: {r: 1, g: 0, b: 0.11764706, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -219,6 +219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _text: {fileID: 6102512735238045059}
+  _particle: {fileID: 0}
 --- !u!199 &3127594939601848544
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -483,7 +484,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.82745105, g: 0.40784317, b: 0.5921569, a: 1}
+      maxColor: {r: 0.9960785, g: 0, b: 0.37647063, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}

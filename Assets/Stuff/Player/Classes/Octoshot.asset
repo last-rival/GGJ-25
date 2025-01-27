@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Octoshot
   m_EditorClassIdentifier: 
   Name: Octoshot
-  id: 0
   maxHp: 200
   maxAir: 150
   maxSize: 1
@@ -22,7 +21,7 @@ MonoBehaviour:
   fireCooldown: 1
   projectileData: {fileID: 11400000, guid: cf4b03ca225565242b7a268fae6bc426, type: 2}
   thrusterCostPerSec: 3
-  thrusterMaxPower: 12
+  thrusterMaxPower: 15
   fullThrustTime: 0.25
   thrusterFailureThreshold: 30
   PlayerPrefab: {fileID: 5347106516115325317, guid: 844ea694e289e77499bc27034f4377fc,

@@ -313,7 +313,7 @@ public class Player : NetworkBehaviour {
         hitPoints = Mathf.Max(0, hitPoints - damage);
 
         if (Mathf.Approximately(hitPoints, 0)) {
-            KillPlayer(killerPlayerRef);
+            KillPlayer(killerPlayerRef, killerPlayerRef == PlayerRef.None);
         }
     }
 
@@ -429,7 +429,6 @@ public class Player : NetworkBehaviour {
 
         Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
         FindObjectOfType<UIManager>().AnnounceMessage(deathCause);
-
         FindObjectOfType<ArenaManager>().PlayerWasKilled(this);
     }
 

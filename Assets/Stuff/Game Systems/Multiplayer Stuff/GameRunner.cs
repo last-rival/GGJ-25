@@ -49,7 +49,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.Escape)) {
+        if (Input.GetKeyDown(KeyCode.Delete)) {
             Application.Quit();
         }
 
@@ -57,7 +57,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.R)) {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
             isLevelRestarting = true;
             RestartLevel();
         }
