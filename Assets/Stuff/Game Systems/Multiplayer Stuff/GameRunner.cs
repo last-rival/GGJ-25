@@ -10,7 +10,6 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] private Transform[] _spawnPositions;
-    [SerializeField] private UIManager _uiManager;
     [SerializeField] private Botshot _botshotPrefab;
 
     public string profileName;
@@ -43,7 +42,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     [SerializeField] private NetworkPrefabRef _playerPrefab;
-    private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
+    public Dictionary<PlayerRef, NetworkObject> SpawnedCharacters = new();
 
     public void SetCurrentPlayer(string className) {
         profileName = className;
@@ -76,29 +75,29 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
         if (runner.IsServer) {
             var spawnPoints = _spawnPositions.Length;
-            var spawnPosition = _spawnPositions[_spawnedCharacters.Count % spawnPoints].position;
+            var spawnPosition = _spawnPositions[SpawnedCharacters.Count % spawnPoints].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
-            _spawnedCharacters.Add(player, networkPlayerObject);
+            SpawnedCharacters.Add(player, networkPlayerObject);
         }
 
         // TODO : Let other game systems know that a player has joined the arena.
         if (player == runner.LocalPlayer) {
-            _uiManager.SetHudScreen();
+            FindObjectOfType<UIManager>()?.SetHudScreen();
         }
 
         if (runner.IsSinglePlayer) {
             Instantiate(_botshotPrefab, _spawnPositions[1].position, Quaternion.identity);
-            _botshotPrefab.SetTarget(_spawnedCharacters[player].GetBehaviour<Player>());
+            _botshotPrefab.SetTarget(SpawnedCharacters[player].GetBehaviour<Player>());
         }
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) {
-        if (_spawnedCharacters.TryGetValue(player, out var networkPlayer) == false) {
+        if (SpawnedCharacters.TryGetValue(player, out var networkPlayer) == false) {
             return;
         }
 
         runner.Despawn(runner.FindObject(networkPlayer));
-        _spawnedCharacters.Remove(player);
+        SpawnedCharacters.Remove(player);
 
         // TODO : Evaluate Game Win Loss state on player leaving the game here.
     }
@@ -112,7 +111,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {
-        _uiManager.SetMenuScreen();
+        FindObjectOfType<UIManager>()?.SetMenuScreen();
     }
 
     public void OnConnectedToServer() {
@@ -130,7 +129,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {
-        _uiManager.SetMenuScreen();
+        FindObjectOfType<UIManager>()?.SetMenuScreen();
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) {

@@ -5,8 +5,9 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour {
 
-    [Header("Game Systems")]
-    [SerializeField] private GameRunner _runner;
+    [SerializeField]
+    private GameRunner _runnerPrefab;
+    private GameRunner _runnerInstance;
 
     [Header("UI Elements")]
     [SerializeField] private GameObject _menu;
@@ -31,6 +32,19 @@ public class UIManager : MonoBehaviour {
 
     [Header("Connection")]
     [SerializeField] private RectTransform _connectionPanel;
+
+    GameRunner GetOrCreateRunnerInstance() {
+        if (_runnerInstance != null) {
+            return _runnerInstance;
+        }
+
+        _runnerInstance = FindObjectOfType<GameRunner>();
+        if (_runnerInstance == null) {
+            _runnerInstance = Instantiate(_runnerPrefab);
+        }
+
+        return _runnerInstance;
+    }
 
     void Start() {
         SetMenuScreen();
@@ -72,17 +86,17 @@ public class UIManager : MonoBehaviour {
     }
 
     public void StartGameAsHost() {
-        _runner.StartGame(GameMode.Host);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Host);
         SetConnectingScreen();
     }
 
     public void StartGameAsClient() {
-        _runner.StartGame(GameMode.Client);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Client);
         SetConnectingScreen();
     }
 
     public void StartBotGame() {
-        _runner.StartGame(GameMode.Single);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Single);
     }
 
     public void SelectProfile(string name) {
@@ -92,7 +106,7 @@ public class UIManager : MonoBehaviour {
         _characterSelectMessage.transform.DOPunchScale(Vector3.one * 0.1f, 0.4f);
 
         var profile = _profileDatabase.GetProfileByName(name);
-        _runner.SetCurrentPlayer(profile.Name);
+        GetOrCreateRunnerInstance().SetCurrentPlayer(profile.Name);
     }
 
     public void AnnounceMessage(string message) {
@@ -109,7 +123,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void SetRoomName(string roomName) {
-        FindObjectOfType<GameRunner>().roomName = roomName;
+        GetOrCreateRunnerInstance().roomName = roomName;
     }
 
 }

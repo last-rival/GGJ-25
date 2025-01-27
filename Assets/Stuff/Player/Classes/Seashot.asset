@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Seashot
   id: 0
-  maxHp: 140
+  maxHp: 120
   maxAir: 120
   maxSize: 1
   minSize: 0.7
   fireCost: 6
-  fireCooldown: 3
+  fireCooldown: 1.8
   projectileData: {fileID: 11400000, guid: 528a2e83cd6ff65408713aff75feabbe, type: 2}
   thrusterCostPerSec: 2
   thrusterMaxPower: 8

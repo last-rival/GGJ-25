@@ -1,2 +1,7 @@
 - Banters.
-- Add bot.
+- Fix Multiplayer
+- Add score
+- Add game start
+- Add a tutorial level
+->>>>>>> Long Term <<<<<<<-
+- Add in game property editor

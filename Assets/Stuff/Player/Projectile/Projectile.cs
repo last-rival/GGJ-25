@@ -131,7 +131,7 @@ public class Projectile : NetworkBehaviour {
             return false;
         }
 
-        botshot.DeathByHit(!isBotShot, _data.projectileDamage);
+        botshot.Hit(!isBotShot, _data.projectileDamage);
         return true;
     }
 

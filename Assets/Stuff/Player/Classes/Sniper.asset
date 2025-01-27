@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4c84684c0de4cc2bb73e84af47b639f, type: 3}
   m_Name: Sniper
   m_EditorClassIdentifier: 
-  projectileSize: 0.8
+  projectileSize: 1.2
   projectileSpeed: 16
   projectileDamage: 45
   projectileHitPoints: 4

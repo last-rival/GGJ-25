@@ -66,6 +66,8 @@ public class Botshot : MonoBehaviour {
         _visuals.SetScale(Vector2.one * 2);
         _visuals.thruster.gameObject.SetActive(true);
 
+
+        UpdateBubbleAirStatus();
         // Set bubble size.
         // Update all UI.
         // Make Tip Top Shape.
@@ -162,13 +164,17 @@ public class Botshot : MonoBehaviour {
         }
     }
 
-    public void DeathByHit(bool wasShotByPlayer, float dataProjectileDamage) {
+    public void Hit(bool wasShotByPlayer, float dataProjectileDamage) {
         _currHp -= dataProjectileDamage;
         _currHp = Mathf.Max(_currHp, 0);
 
+        UpdateHpStatus(wasShotByPlayer);
+    }
+
+    private void UpdateHpStatus(bool wasShotByPlayer) {
         _statusUI.SetHp(Mathf.Max(_currHp / _maxHp));
 
-        if (_currHp <= Mathf.Epsilon) {
+        if (Mathf.Approximately(_currHp, 0)) {
             InitProfile();
             FindObjectOfType<UIManager>().AnnounceMessage(wasShotByPlayer ? "Botshot was shot to death in blublust!" : "Botshot was short circuited by their own bubble!");
         }

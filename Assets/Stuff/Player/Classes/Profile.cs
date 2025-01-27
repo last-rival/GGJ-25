@@ -1,18 +1,10 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public enum ClassType {
-    Default,
-    Assault,
-    Sniper
-}
-
 [CreateAssetMenu(fileName = "Profile ", menuName = "Custom/Profile")]
 public class Profile : ScriptableObject {
 
     public string Name = "Maori";
-
-    public ClassType id = ClassType.Default;
 
     [Range(1, 500)]
     public float maxHp = 100;

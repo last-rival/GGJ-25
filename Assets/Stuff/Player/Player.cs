@@ -27,12 +27,6 @@ public class Player : NetworkBehaviour {
         }
     }
 
-    public override void Despawned(NetworkRunner runner, bool hasState) {
-        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
-        var ui = FindObjectOfType<UIManager>();
-        ui?.AnnounceMessage($"{_currentProfile.name} has perished");
-    }
-
     public override void Render() {
         foreach (var change in changeDetector.DetectChanges(this)) {
             switch (change) {
@@ -58,6 +52,7 @@ public class Player : NetworkBehaviour {
 
                 case nameof(thrustersEngaged):
                     DoThrusterEffects(thrustersEngaged);
+
                     break;
             }
         }
@@ -90,6 +85,10 @@ public class Player : NetworkBehaviour {
     private NetworkButtons _previousButtons;
 
     public override void FixedUpdateNetwork() {
+        if (IsDead) {
+            return;
+        }
+
         if (GetInput(out NetworkInputData data)) {
             ProcessLook(data.cursorPosition);
             ProcessKeyPress(data);
@@ -236,6 +235,10 @@ public class Player : NetworkBehaviour {
     [Networked] private float airCapacity { get; set; }
     private float maxAirCapacity;
 
+    [Networked] private int killCounter { get; set; }
+
+    public bool IsDead => Mathf.Approximately(hitPoints, 0);
+
     public bool TryShootProjectile() {
         if (lastShotTimer.ExpiredOrNotRunning(Runner) == false) {
             return false;
@@ -262,8 +265,8 @@ public class Player : NetworkBehaviour {
                 );
             });
 
-        if (airCapacity == 0) {
-            KillPlayer();
+        if (Mathf.Approximately(airCapacity, 0)) {
+            KillPlayer(PlayerRef.None);
         }
 
         return true;
@@ -299,7 +302,7 @@ public class Player : NetworkBehaviour {
         thrustersEngaged = false;
     }
 
-    public void Hit(PlayerRef owner, float damage) {
+    public void Hit(PlayerRef killerPlayerRef, float damage) {
         if (Object.HasStateAuthority == false) {
             return;
         }
@@ -307,7 +310,7 @@ public class Player : NetworkBehaviour {
         hitPoints = Mathf.Max(0, hitPoints - damage);
 
         if (Mathf.Approximately(hitPoints, 0)) {
-            KillPlayer();
+            KillPlayer(killerPlayerRef);
         }
     }
 
@@ -364,25 +367,64 @@ public class Player : NetworkBehaviour {
         _canvas.SetFireCooldown(fill);
     }
 
-    private void KillPlayer() {
-        if (Runner.IsSinglePlayer) {
-            Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
-            var ui = FindObjectOfType<UIManager>();
-            ui?.AnnounceMessage($"{_currentProfile.name} has fed botshot.");
-            SetProfile(_currentProfile.name);
+    private void KillPlayer(PlayerRef killerPlayerRef, bool isBotSot = false) {
+        if (Object.HasStateAuthority == false) {
             return;
         }
 
-        if (Object.HasStateAuthority) {
-            Runner.Despawn(Object);
+        var wasOutOfAir = killerPlayerRef == PlayerRef.None;
+        var wasSelfShot = Object.InputAuthority == killerPlayerRef;
+        RpcKillPlayer(profileName, wasSelfShot, wasOutOfAir, isBotSot, killerPlayerRef);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    public void RpcDropThruster() {
+        if (visual == null) {
+            return;
         }
+
+        visual.DropThruster();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RpcKillPlayer(NetworkString<_16> playerName, bool wasSelfShot, bool wasOutOfAir, bool isBotShot, PlayerRef killerPlayerRef) {
+        var killerName = "a blup!";
+
+        if (wasSelfShot == false) {
+            var gameRunner = FindObjectOfType<GameRunner>();
+
+            if (gameRunner.SpawnedCharacters.TryGetValue(killerPlayerRef, out var killer)) {
+                var killerPlayer = killer?.GetBehaviour<Player>();
+
+                if (killerPlayer != null) {
+                    killerName = killerPlayer.profileName.ToString();
+                }
+            }
+        }
+
+        string deathCause = $"{playerName} were popped by {killerName}";
+
+        if (wasOutOfAir) {
+            deathCause = $"{playerName} did not realize their bubble was shrinking and they imploded.";
+        }
+
+        if (wasSelfShot) {
+            deathCause = $"{playerName} popped their own bubble. Way to go!";
+        }
+
+        if (isBotShot) {
+            deathCause = "Yes, we agree. Botshot is mean.";
+        }
+
+        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
+        FindObjectOfType<UIManager>().AnnounceMessage(deathCause);
     }
 
     #endregion
 
     #region  Profile
 
-    [Networked] private NetworkString<_16> profileName { get; set; }
+    [Networked] public NetworkString<_16> profileName { get; set; }
 
     [Header("Profiles")]
     [SerializeField] private Profile _currentProfile;
@@ -392,7 +434,7 @@ public class Player : NetworkBehaviour {
 
     public PlayerVisuals visual { get; set; }
 
-    void SetProfile(string profileName) {
+    void SetProfile(string profileName, bool isFirstJoin = true) {
         this.profileName = profileName;
         _currentProfile = _profiles.GetProfileByName(profileName);
 
@@ -409,21 +451,15 @@ public class Player : NetworkBehaviour {
         }
 
         visual = Instantiate(_currentProfile.PlayerPrefab, _visualHolder);
-        FindObjectOfType<UIManager>().AnnounceMessage($"{_currentProfile.Name} has arrived as a Brawler!");
+
+        if (isFirstJoin) {
+            FindObjectOfType<UIManager>().AnnounceMessage($"{_currentProfile.Name} has arrived as a Brawler!");
+        }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     public void RpcChangeClassTo(NetworkString<_16> className) {
         SetProfile(className.ToString());
-    }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
-    public void RpcDropThruster() {
-        if (visual == null) {
-            return;
-        }
-
-        visual.DropThruster();
     }
 
     #endregion

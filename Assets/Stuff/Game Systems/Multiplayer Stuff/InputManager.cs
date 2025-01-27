@@ -6,10 +6,16 @@ using UnityEngine;
 
 public class InputManager : SimulationBehaviour, IBeforeTick, INetworkRunnerCallbacks {
 
-    [SerializeField] private Camera _camera;
-
+    private Camera _camera;
     private NetworkInputData _accumulatedInput;
     private bool _resetInput;
+
+    private void Awake() {
+        _camera = Camera.main;
+        if (_camera == null) {
+            _camera = FindObjectOfType<Camera>();
+        }
+    }
 
     public void BeforeTick() {
 
