@@ -5,6 +5,7 @@ using UnityEngine;
 public class HitVFX : MonoBehaviour {
 
     [SerializeField] private TextMeshPro _text;
+    [SerializeField] private ParticleSystem _particle;
 
     public void Init(float damage) {
         var flatDamage = (int)damage;

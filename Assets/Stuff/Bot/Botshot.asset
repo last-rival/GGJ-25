@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Botshot
   id: 0
-  maxHp: 200
-  maxAir: 150
+  maxHp: 250
+  maxAir: 200
   maxSize: 1
   minSize: 0.7
   fireCost: 4
-  fireCooldown: 1
-  projectileData: {fileID: 11400000, guid: cf4b03ca225565242b7a268fae6bc426, type: 2}
+  fireCooldown: 1.3
+  projectileData: {fileID: 11400000, guid: 9f2468c3d3d4e6f4b85c342ec66b1779, type: 2}
   thrusterCostPerSec: 3
-  thrusterMaxPower: 12
-  fullThrustTime: 3
-  thrusterFailureThreshold: 30
-  PlayerPrefab: {fileID: 6019443783187142732, guid: 714c89c4356478c48bfe93e0a3617a19,
+  thrusterMaxPower: 16
+  fullThrustTime: 4
+  thrusterFailureThreshold: 10
+  PlayerPrefab: {fileID: 3473960930389408132, guid: 2cda9b383cc61ef4a8a1e0f0aee8acad,
     type: 3}

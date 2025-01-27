@@ -26,7 +26,8 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private RectTransform _announcementMessageHolder;
 
     [SerializeField] private TextMeshProUGUI _announcementMessage;
-    [SerializeField] private float viewTime = 3;
+    [SerializeField] private float viewTimePerCharacter = 0.05f;
+    [SerializeField] private float minViewTime = 2;
 
     [Header("Connection")]
     [SerializeField] private RectTransform _connectionPanel;
@@ -96,6 +97,9 @@ public class UIManager : MonoBehaviour {
 
     public void AnnounceMessage(string message) {
         _announcementMessageHolder.DOComplete();
+
+        var viewTime = message.Length * viewTimePerCharacter;
+        viewTime = Mathf.Max(viewTime, minViewTime);
 
         _announcementMessageHolder.anchoredPosition = new Vector2(0, 80);
         _announcementMessageHolder.DOAnchorPosY(0, 0.6f).SetEase(Ease.OutBack);

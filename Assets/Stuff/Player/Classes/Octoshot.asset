@@ -23,7 +23,7 @@ MonoBehaviour:
   projectileData: {fileID: 11400000, guid: cf4b03ca225565242b7a268fae6bc426, type: 2}
   thrusterCostPerSec: 3
   thrusterMaxPower: 12
-  fullThrustTime: 3
+  fullThrustTime: 0.25
   thrusterFailureThreshold: 30
   PlayerPrefab: {fileID: 5347106516115325317, guid: 844ea694e289e77499bc27034f4377fc,
     type: 3}

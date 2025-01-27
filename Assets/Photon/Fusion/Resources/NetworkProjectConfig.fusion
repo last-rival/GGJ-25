@@ -32,7 +32,7 @@
         "ReliableDataTransferModes": 3
     },
     "HostMigration": {
-        "EnableAutoUpdate": false,
+        "EnableAutoUpdate": true,
         "UpdateDelay": 10
     },
     "EncryptionConfig": {
@@ -67,6 +67,6 @@
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,
-    "CheckRpcAttributeUsage": false,
+    "CheckRpcAttributeUsage": true,
     "CheckNetworkedPropertiesBeingEmpty": false
 }

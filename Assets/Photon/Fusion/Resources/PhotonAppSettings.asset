@@ -25,6 +25,6 @@ MonoBehaviour:
     Protocol: 0
     EnableProtocolFallback: 1
     AuthMode: 0
-    EnableLobbyStatistics: 0
+    EnableLobbyStatistics: 1
     encryptionMode: 0
     emptyRoomTtl: 0

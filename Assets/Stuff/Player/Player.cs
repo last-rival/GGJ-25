@@ -58,7 +58,6 @@ public class Player : NetworkBehaviour {
 
                 case nameof(thrustersEngaged):
                     DoThrusterEffects(thrustersEngaged);
-
                     break;
             }
         }

@@ -11,7 +11,6 @@ public class Projectile : NetworkBehaviour {
     [Networked] public PlayerRef owner { get; set; }
     [SerializeField] private Rigidbody2D _rigidbody;
     [SerializeField] private ProfileDatabase _profileDatabase;
-    [SerializeField] private HitVFX _hitVFX;
     [SerializeField] private GameObject _projectileKillVFX;
 
     private ProjectileData _data;
@@ -63,7 +62,7 @@ public class Projectile : NetworkBehaviour {
         }
 
         if (hit) {
-            RpcPlayHitVFX(collision.contacts[0].point, _data.projectileDamage);
+            RpcPlayHitVFX(Runner, collision.contacts[0].point, _data.projectileDamage);
         }
 
         hit = hit || TryHitProjectile(collision.collider.attachedRigidbody);
@@ -132,10 +131,8 @@ public class Projectile : NetworkBehaviour {
             return false;
         }
 
-        botshot.Hit(owner, _data.projectileDamage);
-
+        botshot.DeathByHit(!isBotShot, _data.projectileDamage);
         return true;
-
     }
 
 
@@ -145,8 +142,8 @@ public class Projectile : NetworkBehaviour {
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RpcPlayHitVFX(Vector2 position, float damage) {
-        Instantiate(_hitVFX, position, Quaternion.identity).Init(damage);
+    public static void RpcPlayHitVFX(NetworkRunner runner, Vector2 position, float damage) {
+        FindObjectOfType<FxManager>().ShowHitVFX(position, damage);
     }
 
 }

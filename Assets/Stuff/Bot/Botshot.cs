@@ -1,6 +1,5 @@
 using Fusion;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class Botshot : MonoBehaviour {
 
@@ -8,8 +7,8 @@ public class Botshot : MonoBehaviour {
     [SerializeField] private Transform _shootOrigin;
     [SerializeField] private Transform _rotationRoot;
     [SerializeField] private PlayerVisuals _visuals;
+    [SerializeField] private Transform _visualHolder;
 
-    [FormerlySerializedAs("_botProfile")]
     [SerializeField] private Profile _profile;
 
     [SerializeField] private float _currHp;
@@ -32,6 +31,10 @@ public class Botshot : MonoBehaviour {
     }
 
     private void Start() {
+        _visuals = Instantiate(_profile.PlayerPrefab, _visualHolder);
+        _shootOrigin = _visuals.projectileSpawnPoint;
+        _rotationRoot = _visuals.transform;
+
         FindTarget();
         InitProfile();
     }
@@ -53,35 +56,49 @@ public class Botshot : MonoBehaviour {
             return;
         }
 
-        TryShoot();
+        LookAndShoot();
     }
 
     void InitProfile() {
         _currHp = _maxHp = _profile.maxHp;
         _currAir = _maxAir = _profile.maxAir;
 
+        _visuals.SetScale(Vector2.one * 2);
+        _visuals.thruster.gameObject.SetActive(true);
+
         // Set bubble size.
         // Update all UI.
         // Make Tip Top Shape.
     }
 
-    public void TryShoot() {
-        var elapsedTime = Time.time - lastShotTime;
+    public void LookAndShoot() {
+        if (_visuals == null) {
+            return;
+        }
 
-        _rotationRoot.Rotate(Vector3.forward, turnRatePerSecond * Time.deltaTime);
+        var elapsedTime = Time.time - lastShotTime;
+        var targetVector =  _target.transform.position - transform.position;
+        var angleDelta = Vector2.SignedAngle(_rotationRoot.right, targetVector);
+        var absAngleDelta = Mathf.Abs(angleDelta);
+
+        Debug.DrawRay(_rotationRoot.position, _rotationRoot.right, Mathf.Sign(angleDelta) > 0 ? Color.red : Color.green);
+
+        if (absAngleDelta > 3f) {
+            var rotationPerSec = turnRatePerSecond * Time.deltaTime * Mathf.Sign(angleDelta);
+            _rotationRoot.Rotate(Vector3.forward, rotationPerSec);
+        }
+
         _statusUI.SetFireCooldown(Mathf.Clamp01(elapsedTime / _profile.fireCooldown));
 
         if (elapsedTime < _profile.fireCooldown) {
             EngageThrusters();
+
             return;
         }
 
         DisengageThrusters();
 
-        var targetVector =  _target.transform.position - transform.position;
-        var angleDelta = Vector2.SignedAngle(_rotationRoot.right, targetVector);
-
-        if (Mathf.Abs(angleDelta) <= 5) {
+        if (absAngleDelta <= 5) {
             lastShotTime = Time.time;
 
             _currAir -= _profile.fireCost;
@@ -138,9 +155,14 @@ public class Botshot : MonoBehaviour {
         var fill = Mathf.Clamp01(_currAir / _maxAir);
         _statusUI.SetAirLeft(fill);
         _visuals.SetScale(Vector2.one * (2 * Mathf.Lerp(_profile.minSize, _profile.maxSize, fill)));
+
+        if (Mathf.Approximately(_currAir, 0)) {
+            InitProfile();
+            FindObjectOfType<UIManager>().AnnounceMessage("Botshot's bubble air supply did not last!");
+        }
     }
 
-    public void Hit(PlayerRef owner, float dataProjectileDamage) {
+    public void DeathByHit(bool wasShotByPlayer, float dataProjectileDamage) {
         _currHp -= dataProjectileDamage;
         _currHp = Mathf.Max(_currHp, 0);
 
@@ -148,16 +170,8 @@ public class Botshot : MonoBehaviour {
 
         if (_currHp <= Mathf.Epsilon) {
             InitProfile();
-            FindObjectOfType<UIManager>().AnnounceMessage("Botshot was shot to death in bubble lust!");
+            FindObjectOfType<UIManager>().AnnounceMessage(wasShotByPlayer ? "Botshot was shot to death in blublust!" : "Botshot was short circuited by their own bubble!");
         }
-    }
-
-    public void DeathByAirLoss() {
-        if (_currAir > Mathf.Epsilon) {
-            return;
-        }
-
-        FindObjectOfType<UIManager>().AnnounceMessage("Boshot was consumed by eternal darkness of the depths because their bubble burst.");
     }
 
 }

@@ -17,6 +17,10 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     public string roomName = "Bloop";
 
     public async void StartGame(GameMode gameMode) {
+        if (_networkRunner.IsRunning) {
+            await _networkRunner.Shutdown();
+        }
+
         _networkRunner.ProvideInput = true;
 
         var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
@@ -119,6 +123,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) {
+        _networkRunner.Shutdown();
     }
 
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) {
