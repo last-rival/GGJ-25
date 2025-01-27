@@ -42,7 +42,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     [SerializeField] private NetworkPrefabRef _playerPrefab;
-    public Dictionary<PlayerRef, NetworkObject> SpawnedCharacters = new();
+    public readonly Dictionary<PlayerRef, NetworkObject> SpawnedCharacters = new();
 
     public void SetCurrentPlayer(string className) {
         profileName = className;

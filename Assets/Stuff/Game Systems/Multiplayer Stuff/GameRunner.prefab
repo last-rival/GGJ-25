@@ -118,7 +118,6 @@ MonoBehaviour:
   _spawnPositions:
   - {fileID: 3944413470377031255}
   - {fileID: 2942606883571274269}
-  _uiManager: {fileID: 0}
   _botshotPrefab: {fileID: 8303078529450922353, guid: 9f628a306e12016489de38d56f819795,
     type: 3}
   profileName: 
@@ -163,7 +162,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _physicsAuthority: 2
   _physicsTiming: 3
-  ClientPhysicsSimulation: 0
+  ClientPhysicsSimulation: 3
   DeltaTimeMultiplier: 1
   SetUnityFixedTimestep: 0
 --- !u!114 &6993779787731027808
@@ -178,7 +177,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb70c99419d24da5afc435ba60489ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
 --- !u!1 &7278881111970523585
 GameObject:
   m_ObjectHideFlags: 0

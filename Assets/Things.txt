@@ -3,5 +3,7 @@
 - Add score
 - Add game start
 - Add a tutorial level
+- Add different colored bubbles for player to identify who they are.
+- Add a big cursor that says shoot here please.
 ->>>>>>> Long Term <<<<<<<-
 - Add in game property editor

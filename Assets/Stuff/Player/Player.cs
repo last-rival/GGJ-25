@@ -6,7 +6,7 @@ public class Player : NetworkBehaviour {
 
     [SerializeField] private NetworkRigidbody2D _rigidbody2D;
     [SerializeField] private Projectile _projectilePrefab;
-    [SerializeField] private PlayerStatusUI _canvas;
+    [SerializeField] private PlayerStatusUI _playerStatusUI;
     [SerializeField] private GameObject _deathFX;
 
     ChangeDetector changeDetector { get; set; }
@@ -28,6 +28,10 @@ public class Player : NetworkBehaviour {
     }
 
     public override void Render() {
+        if (visual == null || _playerStatusUI == null || IsDead) {
+            return;
+        }
+
         foreach (var change in changeDetector.DetectChanges(this)) {
             switch (change) {
                 case nameof(zLook):
@@ -54,16 +58,15 @@ public class Player : NetworkBehaviour {
                     DoThrusterEffects(thrustersEngaged);
 
                     break;
-            }
-        }
+                case nameof(killCounter):
 
-        if (Object != null && Object.IsValid &&  Object.HasInputAuthority) {
-            UpdateUI();
+                    break;
+            }
         }
     }
 
     private void Update() {
-        if (visual == null) {
+        if (visual == null || IsDead) {
             return;
         }
 
@@ -272,7 +275,7 @@ public class Player : NetworkBehaviour {
         return true;
     }
 
-    private float power = 0;
+    private float power;
     [Networked]
     private bool thrustersEngaged { get; set; }
 
@@ -315,11 +318,11 @@ public class Player : NetworkBehaviour {
     }
 
     private void DoHitEffects(float currHealth) {
-        if (_canvas == null) {
+        if (_playerStatusUI == null) {
             return;
         }
 
-        _canvas.SetHp(currHealth / maxHitPoints);
+        _playerStatusUI.SetHp(currHealth / maxHitPoints);
     }
 
     private void DoThrusterEffects(bool engaged) {
@@ -336,7 +339,7 @@ public class Player : NetworkBehaviour {
         }
 
         var fill = airCapacity / maxAirCapacity;
-        _canvas.SetAirLeft(fill);
+        _playerStatusUI.SetAirLeft(fill);
 
         var min = _currentProfile.minSize;
         var max = _currentProfile.maxSize;
@@ -358,33 +361,39 @@ public class Player : NetworkBehaviour {
     }
 
     private void DoReloadFill() {
-        if (_canvas == null) {
+        if (_playerStatusUI == null) {
             return;
         }
 
         var elapsedTime = lastShotTimer.RemainingTime(Runner).GetValueOrDefault(0);
         var fill = (_currentProfile.fireCooldown - elapsedTime) / _currentProfile.fireCooldown;
-        _canvas.SetFireCooldown(fill);
+        _playerStatusUI.SetFireCooldown(fill);
     }
 
-    private void KillPlayer(PlayerRef killerPlayerRef, bool isBotSot = false) {
+    private void KillPlayer(PlayerRef killerPlayerRef, bool isBotshot = false) {
         if (Object.HasStateAuthority == false) {
             return;
         }
 
         var wasOutOfAir = killerPlayerRef == PlayerRef.None;
         var wasSelfShot = Object.InputAuthority == killerPlayerRef;
-        RpcKillPlayer(profileName, wasSelfShot, wasOutOfAir, isBotSot, killerPlayerRef);
-    }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
-    public void RpcDropThruster() {
-        if (visual == null) {
-            return;
+        if (wasSelfShot == false && wasOutOfAir == false) {
+            var killer = FindObjectOfType<GameRunner>().SpawnedCharacters[killerPlayerRef].GetBehaviour<Player>();
+            killer.killCounter++;
         }
 
-        visual.DropThruster();
+        if (wasSelfShot || wasOutOfAir) {
+            killCounter--;
+        }
+
+        if (isBotshot) {
+            FindObjectOfType<Botshot>()?.GrantKill(1);
+        }
+
+        RpcKillPlayer(profileName, wasSelfShot, wasOutOfAir, isBotshot, killerPlayerRef);
     }
+
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RpcKillPlayer(NetworkString<_16> playerName, bool wasSelfShot, bool wasOutOfAir, bool isBotShot, PlayerRef killerPlayerRef) {
@@ -416,8 +425,26 @@ public class Player : NetworkBehaviour {
             deathCause = "Yes, we agree. Botshot is mean.";
         }
 
+        SetPlayerVisible(false);
+
         Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
         FindObjectOfType<UIManager>().AnnounceMessage(deathCause);
+
+        FindObjectOfType<ArenaManager>().PlayerWasKilled(this);
+    }
+
+    private void SetPlayerVisible(bool isVisible) {
+        visual.gameObject.SetActive(isVisible);
+        _playerStatusUI.gameObject.SetActive(isVisible);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    public void RpcDropThruster() {
+        if (visual == null) {
+            return;
+        }
+
+        visual.DropThruster();
     }
 
     #endregion
@@ -471,12 +498,6 @@ public class Player : NetworkBehaviour {
     public void InitUI() {
         if (Object.HasInputAuthority) {
             _uiManager = FindObjectOfType<UIManager>();
-        }
-    }
-
-    public void UpdateUI() {
-        if (_uiManager == null) {
-            return;
         }
     }
 

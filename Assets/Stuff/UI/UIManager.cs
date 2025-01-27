@@ -126,4 +126,9 @@ public class UIManager : MonoBehaviour {
         GetOrCreateRunnerInstance().roomName = roomName;
     }
 
+    public void ShowScoreBoard() {
+        
+    }
+
+
 }

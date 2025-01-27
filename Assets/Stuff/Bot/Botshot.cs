@@ -169,6 +169,16 @@ public class Botshot : MonoBehaviour {
         _currHp = Mathf.Max(_currHp, 0);
 
         UpdateHpStatus(wasShotByPlayer);
+
+        if (wasShotByPlayer == false) {
+            GrantKill(-1);
+        }
+    }
+
+    private int killCounter;
+
+    public void GrantKill(int kills) {
+        killCounter += kills;
     }
 
     private void UpdateHpStatus(bool wasShotByPlayer) {

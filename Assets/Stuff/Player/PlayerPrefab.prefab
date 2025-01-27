@@ -358,12 +358,16 @@ MonoBehaviour:
   _rigidbody2D: {fileID: 2784695582468622344}
   _projectilePrefab: {fileID: 1480968991772132406, guid: bb0d31dc91b22bb489bd4d9f19a62d56,
     type: 3}
-  _canvas: {fileID: 6946239239060788485}
+  _playerStatusUI: {fileID: 6946239239060788485}
   _deathFX: {fileID: 8410706697024927701, guid: 06f874d01e3cc81469ff918c852b82a1,
     type: 3}
   _zLook: 0
   _hitPoints: 0
   _airCapacity: 0
+  _profileName:
+    _length: 0
+    _data:
+      Data: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   _currentProfile: {fileID: 11400000, guid: 0c44082a765134348834bf7e2e1c21ee, type: 2}
   _profiles: {fileID: 11400000, guid: 141cb162df0eedb4ab6a41b1cd29431b, type: 2}
   _visualHolder: {fileID: 7432923382726774807}
