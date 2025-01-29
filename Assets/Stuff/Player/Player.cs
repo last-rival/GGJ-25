@@ -13,13 +13,9 @@ public class Player : NetworkBehaviour {
 
     public override void Spawned() {
         changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-        InitUI();
 
         if (Object.HasInputAuthority) {
             RpcChangeClassTo(FindObjectOfType<GameRunner>().profileName);
-        }
-        else {
-            SetProfile(profileName.ToString());
         }
 
         if (Runner.IsClient) {
@@ -40,7 +36,7 @@ public class Player : NetworkBehaviour {
                     break;
 
                 case nameof(profileName):
-                    SetProfile(profileName.ToString());
+                    SetProfile(profileName.ToString(), false);
 
                     break;
 
@@ -58,7 +54,7 @@ public class Player : NetworkBehaviour {
                     DoThrusterEffects(thrustersEngaged);
 
                     break;
-                case nameof(killCounter):
+                case nameof(KillCounter):
 
                     break;
             }
@@ -228,6 +224,9 @@ public class Player : NetworkBehaviour {
 
     #region Warfare
 
+    [Networked] public bool IsGod { get; set; } = true;
+    public bool IsMortal => IsGod == false;
+
     [Networked] private TickTimer lastShotTimer { get; set; }
 
     [field: SerializeField]
@@ -238,11 +237,18 @@ public class Player : NetworkBehaviour {
     [Networked] private float airCapacity { get; set; }
     private float maxAirCapacity;
 
-    [Networked] private int killCounter { get; set; }
+    [Networked] public int KillCounter { get; set; }
 
     public bool IsDead => Mathf.Approximately(hitPoints, 0);
+    public bool IsAlive => IsDead == false;
+
+    [Networked] public bool CanShoot { get; set; } = true;
 
     public bool TryShootProjectile() {
+        if (CanShoot == false) {
+            return false;
+        }
+
         if (lastShotTimer.ExpiredOrNotRunning(Runner) == false) {
             return false;
         }
@@ -275,12 +281,13 @@ public class Player : NetworkBehaviour {
         return true;
     }
 
+    [Networked] public bool CanMove { get; set; } = true;
+    [Networked] private bool thrustersEngaged { get; set; }
+
     private float power;
-    [Networked]
-    private bool thrustersEngaged { get; set; }
 
     public void EngageThrusters() {
-        if (airCapacity <= _currentProfile.thrusterFailureThreshold) {
+        if (airCapacity <= _currentProfile.thrusterFailureThreshold || CanMove == false) {
             power = 0;
             thrustersEngaged = false;
 
@@ -290,7 +297,11 @@ public class Player : NetworkBehaviour {
         thrustersEngaged = true;
 
         var cost = _currentProfile.thrusterCostPerSec * Runner.DeltaTime;
-        airCapacity -= cost;
+
+        if (IsMortal) {
+            airCapacity -= cost;
+        }
+
         airCapacity = Mathf.Max(0, airCapacity);
         var rb = _rigidbody2D.Rigidbody;
         var powerPerSec = _currentProfile.thrusterMaxPower / _currentProfile.fullThrustTime;
@@ -310,10 +321,27 @@ public class Player : NetworkBehaviour {
             return;
         }
 
-        hitPoints = Mathf.Max(0, hitPoints - damage);
+        if (IsMortal) {
+            hitPoints = Mathf.Max(0, hitPoints - damage);
+        }
 
         if (Mathf.Approximately(hitPoints, 0)) {
             KillPlayer(killerPlayerRef, killerPlayerRef == PlayerRef.None);
+        }
+    }
+
+    public void ReviveAndHeal() {
+        airCapacity = maxAirCapacity;
+        lastShotTimer = TickTimer.CreateFromSeconds(Runner, 0);
+
+        if (IsDead) {
+            hitPoints = maxHitPoints;
+        }
+        else {
+            var fill = hitPoints / maxHitPoints;
+            if (fill < 0.5f) {
+                hitPoints = maxHitPoints * 0.5f;
+            }
         }
     }
 
@@ -380,11 +408,11 @@ public class Player : NetworkBehaviour {
 
         if (wasSelfShot == false && wasOutOfAir == false) {
             var killer = FindObjectOfType<GameRunner>().SpawnedCharacters[killerPlayerRef].GetBehaviour<Player>();
-            killer.killCounter++;
+            killer.KillCounter++;
         }
 
         if (wasSelfShot || wasOutOfAir) {
-            killCounter--;
+            KillCounter--;
         }
 
         if (isBotshot) {
@@ -429,12 +457,11 @@ public class Player : NetworkBehaviour {
 
         Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
         FindObjectOfType<UIManager>().AnnounceMessage(deathCause);
-        FindObjectOfType<ArenaManager>().PlayerWasKilled(this);
+        FindObjectOfType<ArenaManager>().BrawlerWasKilled();
     }
 
     private void SetPlayerVisible(bool isVisible) {
-        visual.gameObject.SetActive(isVisible);
-        _playerStatusUI.gameObject.SetActive(isVisible);
+        _visualHolder.gameObject.SetActive(isVisible);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
@@ -486,18 +513,6 @@ public class Player : NetworkBehaviour {
     [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     public void RpcChangeClassTo(NetworkString<_16> className) {
         SetProfile(className.ToString());
-    }
-
-    #endregion
-
-    #region UI Updates
-
-    private UIManager _uiManager;
-
-    public void InitUI() {
-        if (Object.HasInputAuthority) {
-            _uiManager = FindObjectOfType<UIManager>();
-        }
     }
 
     #endregion

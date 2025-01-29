@@ -115,9 +115,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _networkRunner: {fileID: 147455411503258191}
-  _spawnPositions:
+  SpawnPositions:
   - {fileID: 3944413470377031255}
   - {fileID: 2942606883571274269}
+  - {fileID: 8712306367818777345}
+  - {fileID: 1841593914650710419}
   _botshotPrefab: {fileID: 8303078529450922353, guid: 9f628a306e12016489de38d56f819795,
     type: 3}
   profileName: 

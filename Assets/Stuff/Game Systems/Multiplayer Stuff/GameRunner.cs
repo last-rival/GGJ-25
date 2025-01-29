@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     [SerializeField] private NetworkRunner _networkRunner;
-    [SerializeField] private Transform[] _spawnPositions;
+    [SerializeField] public Transform[] SpawnPositions;
     [SerializeField] private Botshot _botshotPrefab;
 
     public string profileName;
@@ -74,8 +74,8 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) {
         if (runner.IsServer) {
-            var spawnPoints = _spawnPositions.Length;
-            var spawnPosition = _spawnPositions[SpawnedCharacters.Count % spawnPoints].position;
+            var spawnPoints = SpawnPositions.Length;
+            var spawnPosition = SpawnPositions[SpawnedCharacters.Count % spawnPoints].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             SpawnedCharacters.Add(player, networkPlayerObject);
         }
@@ -86,9 +86,13 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
         }
 
         if (runner.IsSinglePlayer) {
-            Instantiate(_botshotPrefab, _spawnPositions[1].position, Quaternion.identity);
-            _botshotPrefab.SetTarget(SpawnedCharacters[player].GetBehaviour<Player>());
+            AddBot(SpawnedCharacters[player].GetBehaviour<Player>());
         }
+    }
+
+    public void AddBot(Player target) {
+        Instantiate(_botshotPrefab, SpawnPositions[1].position, Quaternion.identity);
+        _botshotPrefab.SetTarget(target);
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) {

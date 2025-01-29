@@ -4,9 +4,6 @@ using UnityEngine;
 public class Botshot : MonoBehaviour {
 
     [SerializeField] private Rigidbody2D _rigidbody;
-    [SerializeField] private Transform _shootOrigin;
-    [SerializeField] private Transform _rotationRoot;
-    [SerializeField] private PlayerVisuals _visuals;
     [SerializeField] private Transform _visualHolder;
 
     [SerializeField] private Profile _profile;
@@ -22,9 +19,21 @@ public class Botshot : MonoBehaviour {
 
     [SerializeField] private PlayerStatusUI _statusUI;
 
+    [SerializeField] public bool IsGod = true;
+    public bool IsMortal => IsGod == false;
+
+    [SerializeField] public bool CanShoot = true;
+    [SerializeField] public bool CanMove = true;
+
+    public bool IsDead => Mathf.Approximately(_currHp, 0);
+
     private float lastShotTime;
 
     private Player _target;
+
+    private Transform _shootOrigin;
+    private Transform _rotationRoot;
+    private PlayerVisuals _visuals;
 
     public void SetTarget(Player target) {
         _target = target;
@@ -77,6 +86,7 @@ public class Botshot : MonoBehaviour {
         if (_target == null || _target.IsDead) {
             _rotationRoot.Rotate(Vector3.forward, turnRatePerSecond * Time.deltaTime);
             _visuals.SetThrusterActive(true);
+
             return;
         }
 
@@ -100,39 +110,51 @@ public class Botshot : MonoBehaviour {
 
         DisengageThrusters();
 
-        if (absAngleDelta <= 5) {
-            lastShotTime = Time.time;
-
-            _currAir -= _profile.fireCost;
-            _currAir = Mathf.Max(0, _currAir);
-            UpdateBubbleAirStatus();
-
-            var facingDir = _rotationRoot.right;
-            _rigidbody.AddForce(facingDir * (_profile.projectileData.shotKnockBack * -1), ForceMode2D.Impulse);
-
-            _target.Runner.Spawn(_projectile, _shootOrigin.position, Quaternion.identity, PlayerRef.None,
-                onBeforeSpawned: (_, o) => {
-                    o.GetBehaviour<Projectile>().Init(
-                        velocity: facingDir * _profile.projectileData.projectileSpeed,
-                        owner: PlayerRef.None,
-                        profileName: _profile.Name,
-                        isBotShot: true
-                    );
-                });
+        if (CanShoot == false) {
+            return;
         }
+
+        if (absAngleDelta > 5) {
+            return;
+        }
+
+        lastShotTime = Time.time;
+
+        if (IsMortal) {
+            _currAir -= _profile.fireCost;
+        }
+
+        _currAir = Mathf.Max(0, _currAir);
+        UpdateBubbleAirStatus();
+
+        var facingDir = _rotationRoot.right;
+        _rigidbody.AddForce(facingDir * (_profile.projectileData.shotKnockBack * -1), ForceMode2D.Impulse);
+
+        _target.Runner.Spawn(_projectile, _shootOrigin.position, Quaternion.identity, PlayerRef.None,
+            onBeforeSpawned: (_, o) => {
+                o.GetBehaviour<Projectile>().Init(
+                    velocity: facingDir * _profile.projectileData.projectileSpeed,
+                    owner: PlayerRef.None,
+                    profileName: _profile.Name,
+                    isBotShot: true
+                );
+            });
     }
 
     private float power;
 
     public void EngageThrusters() {
-        if (_currAir <= _profile.thrusterFailureThreshold) {
+        if (_currAir <= _profile.thrusterFailureThreshold || CanMove == false) {
             power = 0;
 
             return;
         }
 
         var cost = _profile.thrusterCostPerSec * _target.Runner.DeltaTime;
-        _currAir -= cost;
+
+        if (IsMortal) {
+            _currAir -= cost;
+        }
         _currAir = Mathf.Max(0, _currAir);
 
         _visuals.SetThrusterActive(true);
@@ -165,7 +187,10 @@ public class Botshot : MonoBehaviour {
     }
 
     public void Hit(bool wasShotByPlayer, float dataProjectileDamage) {
-        _currHp -= dataProjectileDamage;
+        if (IsMortal) {
+            _currHp -= dataProjectileDamage;
+        }
+
         _currHp = Mathf.Max(_currHp, 0);
 
         UpdateHpStatus(wasShotByPlayer);
@@ -173,12 +198,14 @@ public class Botshot : MonoBehaviour {
         if (wasShotByPlayer == false) {
             GrantKill(-1);
         }
+
+        FindObjectOfType<ArenaManager>().BrawlerWasKilled();
     }
 
-    private int killCounter;
+    public int KillCounter;
 
     public void GrantKill(int kills) {
-        killCounter += kills;
+        KillCounter += kills;
     }
 
     private void UpdateHpStatus(bool wasShotByPlayer) {
@@ -190,4 +217,22 @@ public class Botshot : MonoBehaviour {
         }
     }
 
+    public void ReviveAndHeal() {
+        _currAir = _maxAir;
+        lastShotTime = 0;
+
+        if (IsDead) {
+            _currHp = _maxHp;
+        }
+        else {
+            var fill = _currHp / _maxHp;
+
+            if (fill < 0.5f) {
+                _currHp = _maxHp * 0.5f;
+            }
+        }
+        
+        UpdateHpStatus(false);
+        UpdateBubbleAirStatus();
+    }
 }
