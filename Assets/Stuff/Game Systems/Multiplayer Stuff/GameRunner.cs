@@ -11,11 +11,18 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     [SerializeField] private NetworkRunner _networkRunner;
     [SerializeField] public Transform[] SpawnPositions;
     [SerializeField] private Botshot _botshotPrefab;
+    [SerializeField] private NetworkPrefabRef _readyBubblePrefab;
+    [SerializeField] public Transform[] ReadyPositions;
 
     public string profileName;
     public string roomName = "Bloop";
 
-    public async void StartGame(GameMode gameMode) {
+    private UIManager uiManager;
+
+    public async void StartGame(GameMode gameMode, UIManager uiManager) {
+        this.uiManager = uiManager;
+        GetComponent<ArenaManager>().Init(this, uiManager);
+
         if (_networkRunner.IsRunning) {
             await _networkRunner.Shutdown();
         }
@@ -66,7 +73,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     private bool isLevelRestarting;
 
     async void RestartLevel() {
-        FindObjectOfType<UIManager>().AnnounceMessage("Restarting game...");
+        uiManager.AnnounceMessage("Restarting game...");
         await _networkRunner.Shutdown();
         DOTween.KillAll();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -78,11 +85,14 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
             var spawnPosition = SpawnPositions[SpawnedCharacters.Count % spawnPoints].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             SpawnedCharacters.Add(player, networkPlayerObject);
+
+            var readyPoint = ReadyPositions[(SpawnedCharacters.Count - 1) % spawnPoints].position;
+            runner.Spawn(_readyBubblePrefab, readyPoint, Quaternion.identity, PlayerRef.MasterClient, (_, o) => o.GetBehaviour<ReadyBubble>().Init(player));
         }
 
         // TODO : Let other game systems know that a player has joined the arena.
         if (player == runner.LocalPlayer) {
-            FindObjectOfType<UIManager>()?.SetHudScreen();
+            uiManager.SetHudScreen();
         }
 
         if (runner.IsSinglePlayer) {
@@ -115,7 +125,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) {
-        FindObjectOfType<UIManager>()?.SetMenuScreen();
+        uiManager.SetMenuScreen();
     }
 
     public void OnConnectedToServer() {
@@ -133,7 +143,7 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
     }
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) {
-        FindObjectOfType<UIManager>()?.SetMenuScreen();
+        uiManager.SetMenuScreen();
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) {

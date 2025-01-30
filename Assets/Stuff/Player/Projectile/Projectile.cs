@@ -57,15 +57,20 @@ public class Projectile : NetworkBehaviour {
 
         var hit = TryHitPlayer(collision.collider.attachedRigidbody);
 
-        if (Runner.IsSinglePlayer) {
-            hit = hit || TryHitBot(collision.collider.attachedRigidbody);
+        if (hit == false) {
+            hit = TryHitBot(collision.collider.attachedRigidbody);
         }
 
         if (hit) {
             RpcPlayHitVFX(Runner, collision.contacts[0].point, _data.projectileDamage);
         }
 
-        hit = hit || TryHitProjectile(collision.collider.attachedRigidbody);
+        if (hit == false) {
+            hit = TryHitProjectile(collision.collider.attachedRigidbody);
+        }
+        if (hit == false) {
+            hit = TryHitReadyBubble(collision.collider);
+        }
 
         hitPoints--;
 
@@ -95,7 +100,7 @@ public class Projectile : NetworkBehaviour {
             }
         }
 
-        player.Hit(isBotShot ? owner : PlayerRef.None, _data.projectileDamage);
+        player.Hit(owner, _data.projectileDamage, isBotShot);
 
         return true;
     }
@@ -131,10 +136,21 @@ public class Projectile : NetworkBehaviour {
             return false;
         }
 
-        botshot.Hit(!isBotShot, _data.projectileDamage);
+        botshot.Hit(owner, _data.projectileDamage, isBotShot);
+
         return true;
     }
 
+
+    bool TryHitReadyBubble(Collider2D collider) {
+        var readyBubble = collider.GetComponent<ReadyBubble>();
+        if (readyBubble == null || readyBubble.Owner != owner) {
+            return false;
+        }
+
+        Runner.Despawn(readyBubble.GetComponent<NetworkObject>());
+        return true;
+    }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RpcPlayBounceSFX() {

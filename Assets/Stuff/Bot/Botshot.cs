@@ -25,7 +25,7 @@ public class Botshot : MonoBehaviour {
     [SerializeField] public bool CanShoot = true;
     [SerializeField] public bool CanMove = true;
 
-    public bool IsDead => Mathf.Approximately(_currHp, 0);
+    public bool IsDead => Mathf.Approximately(_currHp, 0) || Mathf.Approximately(_currAir, 0);
 
     private float lastShotTime;
 
@@ -68,18 +68,19 @@ public class Botshot : MonoBehaviour {
         _currHp = _maxHp = _profile.maxHp;
         _currAir = _maxAir = _profile.maxAir;
 
+        if (_visuals == null) {
+            return;
+        }
+
         _visuals.SetScale(Vector2.one * 2);
         _visuals.thruster.gameObject.SetActive(true);
 
-
+        _statusUI.SetHp(Mathf.Max(_currHp / _maxHp));
         UpdateBubbleAirStatus();
-        // Set bubble size.
-        // Update all UI.
-        // Make Tip Top Shape.
     }
 
     public void LookAndShoot() {
-        if (_visuals == null) {
+        if (_visuals == null || IsDead) {
             return;
         }
 
@@ -139,6 +140,11 @@ public class Botshot : MonoBehaviour {
                     isBotShot: true
                 );
             });
+
+        if (Mathf.Approximately(_currAir, 0)) {
+            FindObjectOfType<UIManager>().AnnounceMessage("Botshot's bubble air supply did not last!");
+            KillBot(PlayerRef.Invalid, false);
+        }
     }
 
     private float power;
@@ -155,6 +161,7 @@ public class Botshot : MonoBehaviour {
         if (IsMortal) {
             _currAir -= cost;
         }
+
         _currAir = Mathf.Max(0, _currAir);
 
         _visuals.SetThrusterActive(true);
@@ -166,6 +173,11 @@ public class Botshot : MonoBehaviour {
         power = Mathf.Min(_profile.thrusterMaxPower, power);
         var direction = _rotationRoot.transform.right;
         rb.AddForce(direction * power, ForceMode2D.Force);
+
+        if (Mathf.Approximately(_currAir, 0)) {
+            FindObjectOfType<UIManager>().AnnounceMessage("Botshot's bubble air supply did not last!");
+            KillBot(PlayerRef.Invalid, false);
+        }
     }
 
     public void DisengageThrusters() {
@@ -178,43 +190,57 @@ public class Botshot : MonoBehaviour {
     private void UpdateBubbleAirStatus() {
         var fill = Mathf.Clamp01(_currAir / _maxAir);
         _statusUI.SetAirLeft(fill);
-        _visuals.SetScale(Vector2.one * (2 * Mathf.Lerp(_profile.minSize, _profile.maxSize, fill)));
-
-        if (Mathf.Approximately(_currAir, 0)) {
-            InitProfile();
-            FindObjectOfType<UIManager>().AnnounceMessage("Botshot's bubble air supply did not last!");
-        }
+        _visuals?.SetScale(Vector2.one * (2 * Mathf.Lerp(_profile.minSize, _profile.maxSize, fill)));
     }
 
-    public void Hit(bool wasShotByPlayer, float dataProjectileDamage) {
+    public void Hit(PlayerRef killer, float dataProjectileDamage, bool isBotShot) {
         if (IsMortal) {
             _currHp -= dataProjectileDamage;
         }
 
         _currHp = Mathf.Max(_currHp, 0);
 
-        UpdateHpStatus(wasShotByPlayer);
+        UpdateHpStatus(isBotShot);
 
-        if (wasShotByPlayer == false) {
-            GrantKill(-1);
+        if (Mathf.Approximately(_currHp, 0)) {
+            FindObjectOfType<UIManager>().AnnounceMessage(isBotShot == false ? "Botshot was shot to death in blublust!" : "Botshot was short circuited by their own bubble!");
+            KillBot(killer, isBotShot); 
+        }
+    }
+
+    void KillBot(PlayerRef killerPlayerRef, bool isBotShot) {
+        var wasOutOfAir = Mathf.Approximately(_currAir, 0);
+
+        if (isBotShot == false && wasOutOfAir == false) {
+            var killer = FindObjectOfType<GameRunner>().SpawnedCharacters[killerPlayerRef].GetBehaviour<Player>();
+            killer.KillCounter++;
+        }
+        else {
+            if (isBotShot) {
+                KillCounter--;
+            }
+
+            if (wasOutOfAir) {
+                KillCounter--;
+            }
         }
 
+        CanMove = false;
+        CanShoot = false;
+
+        SetVisible(false);
         FindObjectOfType<ArenaManager>().BrawlerWasKilled();
+        FindObjectOfType<FxManager>().ShowPlayerDeathVFX(_rigidbody.position);
     }
 
     public int KillCounter;
 
-    public void GrantKill(int kills) {
-        KillCounter += kills;
-    }
-
     private void UpdateHpStatus(bool wasShotByPlayer) {
         _statusUI.SetHp(Mathf.Max(_currHp / _maxHp));
+    }
 
-        if (Mathf.Approximately(_currHp, 0)) {
-            InitProfile();
-            FindObjectOfType<UIManager>().AnnounceMessage(wasShotByPlayer ? "Botshot was shot to death in blublust!" : "Botshot was short circuited by their own bubble!");
-        }
+    public void SetVisible(bool isVisible) {
+        _visualHolder.gameObject.SetActive(isVisible);
     }
 
     public void ReviveAndHeal() {
@@ -231,8 +257,17 @@ public class Botshot : MonoBehaviour {
                 _currHp = _maxHp * 0.5f;
             }
         }
-        
+
+        SetVisible(true);
         UpdateHpStatus(false);
         UpdateBubbleAirStatus();
+    }
+
+    public void ShowScore(bool show) {
+        if (_statusUI == null) {
+            return;
+        }
+
+        _statusUI.ShowScore(show, KillCounter);
     }
 }

@@ -5,14 +5,22 @@ using UnityEngine;
 
 public class ArenaManager : SimulationBehaviour {
 
-    [SerializeField] private UIManager _uiManager;
+    private UIManager uiManager;
     private GameRunner gameRunner;
 
     private bool isGameRunning;
     private int playerReady;
+    private int roundCounter;
+
+    public void Init(GameRunner gameRunner, UIManager uiManager) {
+        this.gameRunner = gameRunner;
+        this.uiManager = uiManager;
+        playerReady = 0;
+        roundCounter = 0;
+    }
 
     public void PlayerIsRead(PlayerRef _) {
-        if (Object.HasStateAuthority == false) {
+        if (Runner.IsServer == false) {
             return;
         }
 
@@ -25,13 +33,8 @@ public class ArenaManager : SimulationBehaviour {
         var playerCount = gameRunner.SpawnedCharacters.Count;
 
         if (playerReady == playerCount) {
-            StartGame();
+            StartRound(gameRunner);
         }
-    }
-
-    public void StartGame() {
-        gameRunner = FindObjectOfType<GameRunner>();
-        StartRound(gameRunner);
     }
 
     public void BrawlerWasKilled() {
@@ -44,50 +47,61 @@ public class ArenaManager : SimulationBehaviour {
             }
         }
 
-        if (alivePlayerCount == 0) {
-            StartRound(gameRunner);
+        if (alivePlayerCount <= 1) {
+            ShowRoundResults();
         }
+    }
+
+    public void ShowRoundResults() {
+        ShowScore(true);
+        SetPlayerReady(true, true);
+        var sequence = DOTween.Sequence();
+        sequence.AppendInterval(3);
+        sequence.AppendCallback(() => { StartRound(gameRunner); });
     }
 
     private void StartRound(GameRunner gameRunner) {
         var activePlayers = gameRunner.SpawnedCharacters;
         var spawnPoints = gameRunner.SpawnPositions;
-        var playerRB = new List<Rigidbody2D>();
+        var rbs = new List<Rigidbody2D>();
 
         foreach (var player in activePlayers) {
-            playerRB.Add(player.Value.GetComponent<Rigidbody2D>());
-            player.Value.GetBehaviour<Player>().ReviveAndHeal();
-        }
-
-        if (activePlayers.Count == 1) {
-            this.gameRunner.AddBot(playerRB[0].GetComponent<Player>());
+            rbs.Add(player.Value.GetComponent<Rigidbody2D>());
+            var playerBehaviour = player.Value.GetBehaviour<Player>();
+            playerBehaviour.ReviveAndHeal();
         }
 
         var bots = FindObjectsOfType<Botshot>();
 
+        if (activePlayers.Count == 1 && bots.Length == 0) {
+            this.gameRunner.AddBot(rbs[0].GetComponent<Player>());
+            bots = FindObjectsOfType<Botshot>();
+        }
+
         foreach (var bot in bots) {
-            playerRB.Add(bot.GetComponent<Rigidbody2D>());
+            rbs.Add(bot.GetComponent<Rigidbody2D>());
             bot.ReviveAndHeal();
         }
 
-        ResetPositions(playerRB, spawnPoints);
-
+        ResetPositions(rbs, spawnPoints);
         RpcStartRound(Runner);
     }
 
     public void ShowRoundStartEffects() {
+        roundCounter++;
         SetPlayerReady(false, true);
         var sequence = DOTween.Sequence();
-        sequence.AppendCallback(() => _uiManager.AnnounceMessage("Round Starts In :"));
+        sequence.AppendCallback(() => uiManager.AnnounceMessage($"Brawl {roundCounter} starts In"));
+        sequence.AppendInterval(2);
+        sequence.AppendCallback(() => uiManager.AnnounceMessage("3"));
         sequence.AppendInterval(1);
-        sequence.AppendCallback(() => _uiManager.AnnounceMessage("3"));
+        sequence.AppendCallback(() => uiManager.AnnounceMessage("2"));
         sequence.AppendInterval(1);
-        sequence.AppendCallback(() => _uiManager.AnnounceMessage("2"));
-        sequence.AppendInterval(1);
-        sequence.AppendCallback(() => _uiManager.AnnounceMessage("1"));
+        sequence.AppendCallback(() => uiManager.AnnounceMessage("1"));
         sequence.AppendInterval(1);
         sequence.AppendCallback(() => {
-            _uiManager.AnnounceMessage("Brawl!");
+            ShowScore(false);
+            uiManager.AnnounceMessage("Brawl!");
             SetPlayerReady(true);
         });
     }
@@ -111,13 +125,28 @@ public class ArenaManager : SimulationBehaviour {
         }
     }
 
-    static void ResetPositions(List<Rigidbody2D> players, Transform[] spawnPoints) {
+    void ShowScore(bool show) {
+        var activePlayers = gameRunner.SpawnedCharacters;
+
+        foreach (var playerKV in activePlayers) {
+            playerKV.Value.GetBehaviour<Player>().ShowScore(show);
+        }
+
+        var bots = FindObjectsOfType<Botshot>();
+
+        foreach (var bot in bots) {
+            bot.ShowScore(show);
+        }
+    }
+
+    static void ResetPositions(List<Rigidbody2D> rigidbody2Ds, Transform[] spawnPoints) {
         var spawnPointIndex = 0;
         var spawnPointLength = spawnPoints.Length;
 
-        foreach (var player in players) {
+        foreach (var rb in rigidbody2Ds) {
             var point = spawnPoints[spawnPointIndex];
-            player.position = point.position;
+            rb.position = point.position;
+            rb.velocity = Vector2.zero;
             spawnPointIndex = (spawnPointIndex + 1) % spawnPointLength;
         }
     }
@@ -131,5 +160,4 @@ public class ArenaManager : SimulationBehaviour {
     public static void RpcPlayerIsReady(NetworkRunner runner, PlayerRef playerRef) {
         FindObjectOfType<ArenaManager>().PlayerIsRead(playerRef);
     }
-
 }

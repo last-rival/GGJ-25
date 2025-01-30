@@ -239,7 +239,7 @@ public class Player : NetworkBehaviour {
 
     [Networked] public int KillCounter { get; set; }
 
-    public bool IsDead => Mathf.Approximately(hitPoints, 0);
+    public bool IsDead => Mathf.Approximately(hitPoints, 0) || Mathf.Approximately(airCapacity, 0);
     public bool IsAlive => IsDead == false;
 
     [Networked] public bool CanShoot { get; set; } = true;
@@ -316,7 +316,7 @@ public class Player : NetworkBehaviour {
         thrustersEngaged = false;
     }
 
-    public void Hit(PlayerRef killerPlayerRef, float damage) {
+    public void Hit(PlayerRef killerPlayerRef, float damage, bool isBotShot) {
         if (Object.HasStateAuthority == false) {
             return;
         }
@@ -326,7 +326,7 @@ public class Player : NetworkBehaviour {
         }
 
         if (Mathf.Approximately(hitPoints, 0)) {
-            KillPlayer(killerPlayerRef, killerPlayerRef == PlayerRef.None);
+            KillPlayer(killerPlayerRef, isBotShot);
         }
     }
 
@@ -339,10 +339,13 @@ public class Player : NetworkBehaviour {
         }
         else {
             var fill = hitPoints / maxHitPoints;
+
             if (fill < 0.5f) {
                 hitPoints = maxHitPoints * 0.5f;
             }
         }
+
+        SetPlayerVisible(true);
     }
 
     private void DoHitEffects(float currHealth) {
@@ -403,20 +406,27 @@ public class Player : NetworkBehaviour {
             return;
         }
 
-        var wasOutOfAir = killerPlayerRef == PlayerRef.None;
+        var wasOutOfAir = Mathf.Approximately(airCapacity, 0);
         var wasSelfShot = Object.InputAuthority == killerPlayerRef;
 
-        if (wasSelfShot == false && wasOutOfAir == false) {
+
+        if (isBotshot == false && wasSelfShot == false && wasOutOfAir == false) {
             var killer = FindObjectOfType<GameRunner>().SpawnedCharacters[killerPlayerRef].GetBehaviour<Player>();
             killer.KillCounter++;
         }
+        else {
+            if (wasSelfShot) {
+                KillCounter--;
+            }
 
-        if (wasSelfShot || wasOutOfAir) {
-            KillCounter--;
-        }
+            if (wasOutOfAir) {
+                KillCounter--;
+            }
 
-        if (isBotshot) {
-            FindObjectOfType<Botshot>()?.GrantKill(1);
+            if (isBotshot) {
+                var bot = FindObjectOfType<Botshot>();
+                bot.KillCounter++;
+            }
         }
 
         RpcKillPlayer(profileName, wasSelfShot, wasOutOfAir, isBotshot, killerPlayerRef);
@@ -455,7 +465,7 @@ public class Player : NetworkBehaviour {
 
         SetPlayerVisible(false);
 
-        Instantiate(_deathFX, Object.transform.position, Quaternion.identity);
+        FindObjectOfType<FxManager>().ShowPlayerDeathVFX(_rigidbody2D.RBPosition);
         FindObjectOfType<UIManager>().AnnounceMessage(deathCause);
         FindObjectOfType<ArenaManager>().BrawlerWasKilled();
     }
@@ -517,4 +527,11 @@ public class Player : NetworkBehaviour {
 
     #endregion
 
+    public void ShowScore(bool show) {
+        if (_playerStatusUI == null) {
+            return;
+        }
+
+        _playerStatusUI.ShowScore(show, KillCounter);
+    }
 }

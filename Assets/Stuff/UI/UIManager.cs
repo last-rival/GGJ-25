@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour {
 
     [SerializeField]
     private GameRunner _runnerPrefab;
+
     private GameRunner _runnerInstance;
 
     [Header("UI Elements")]
@@ -39,6 +40,7 @@ public class UIManager : MonoBehaviour {
         }
 
         _runnerInstance = FindObjectOfType<GameRunner>();
+
         if (_runnerInstance == null) {
             _runnerInstance = Instantiate(_runnerPrefab);
         }
@@ -86,17 +88,17 @@ public class UIManager : MonoBehaviour {
     }
 
     public void StartGameAsHost() {
-        GetOrCreateRunnerInstance().StartGame(GameMode.Host);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Host, this);
         SetConnectingScreen();
     }
 
     public void StartGameAsClient() {
-        GetOrCreateRunnerInstance().StartGame(GameMode.Client);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Client, this);
         SetConnectingScreen();
     }
 
     public void StartBotGame() {
-        GetOrCreateRunnerInstance().StartGame(GameMode.Single);
+        GetOrCreateRunnerInstance().StartGame(GameMode.Single, this);
     }
 
     public void SelectProfile(string name) {
@@ -127,7 +129,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void ShowScoreBoard() {
-        
+
     }
 
 
