@@ -17,6 +17,9 @@ public class Player : NetworkBehaviour {
         if (Object.HasInputAuthority) {
             RpcChangeClassTo(FindObjectOfType<GameRunner>().profileName);
         }
+        else {
+            SetProfile(_currentProfile.Name, false);
+        }
 
         if (Runner.IsClient) {
             Runner.SetIsSimulated(Object, true);

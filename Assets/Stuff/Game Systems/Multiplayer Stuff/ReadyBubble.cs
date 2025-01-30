@@ -9,7 +9,11 @@ public class ReadyBubble : NetworkBehaviour {
     [Networked] public PlayerRef Owner { get; set; }
 
     public override void Despawned(NetworkRunner runner, bool hasState) {
-        ArenaManager.RpcPlayerIsReady(runner, Owner);
+        if (Object.HasStateAuthority == false) {
+            return;
+        }
+
+        FindObjectOfType<ArenaManager>().PlayerIsReady(Owner);
     }
 
 }

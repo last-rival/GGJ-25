@@ -84,10 +84,11 @@ public class GameRunner : MonoBehaviour, INetworkRunnerCallbacks {
             var spawnPoints = SpawnPositions.Length;
             var spawnPosition = SpawnPositions[SpawnedCharacters.Count % spawnPoints].position;
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
-            SpawnedCharacters.Add(player, networkPlayerObject);
 
-            var readyPoint = ReadyPositions[(SpawnedCharacters.Count - 1) % spawnPoints].position;
-            runner.Spawn(_readyBubblePrefab, readyPoint, Quaternion.identity, PlayerRef.MasterClient, (_, o) => o.GetBehaviour<ReadyBubble>().Init(player));
+            var readyPoint = ReadyPositions[SpawnedCharacters.Count % spawnPoints].position;
+            runner.Spawn(_readyBubblePrefab, readyPoint, Quaternion.identity, player, (_, o) => o.GetBehaviour<ReadyBubble>().Init(player));
+
+            SpawnedCharacters.Add(player, networkPlayerObject);
         }
 
         // TODO : Let other game systems know that a player has joined the arena.

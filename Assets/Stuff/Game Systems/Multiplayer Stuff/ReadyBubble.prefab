@@ -12,8 +12,9 @@ GameObject:
   - component: {fileID: 8560111065974955952}
   - component: {fileID: 313762588605413360}
   - component: {fileID: 6898696845828088354}
+  - component: {fileID: -4400265742680662392}
   m_Layer: 0
-  m_Name: ReadyBuble
+  m_Name: ReadyBubble
   m_TagString: Projectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,6 +55,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 6898696845828088354}
+  - {fileID: -4400265742680662392}
   ForceRemoteRenderTimeframe: 0
 --- !u!58 &313762588605413360
 CircleCollider2D:
@@ -102,6 +104,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdde63fb21e8e804c88506af3a1e0369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-4400265742680662392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2498579767561385309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &3247360454690114821
 GameObject:
   m_ObjectHideFlags: 0

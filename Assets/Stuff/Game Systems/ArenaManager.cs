@@ -9,31 +9,25 @@ public class ArenaManager : SimulationBehaviour {
     private GameRunner gameRunner;
 
     private bool isGameRunning;
-    private int playerReady;
+    private int playersReady;
     private int roundCounter;
 
     public void Init(GameRunner gameRunner, UIManager uiManager) {
         this.gameRunner = gameRunner;
         this.uiManager = uiManager;
-        playerReady = 0;
+        playersReady = 0;
         roundCounter = 0;
     }
 
-    public void PlayerIsRead(PlayerRef _) {
+    public void PlayerIsReady(PlayerRef _) {
         if (Runner.IsServer == false) {
             return;
         }
 
-        playerReady++;
-
-        if (gameRunner == null) {
-            gameRunner = FindObjectOfType<GameRunner>();
-        }
-
-        var playerCount = gameRunner.SpawnedCharacters.Count;
-
-        if (playerReady == playerCount) {
-            StartRound(gameRunner);
+        playersReady++;
+        var playersCount = gameRunner.SpawnedCharacters.Count;
+        if (playersReady == playersCount) {
+            StartRound();
         }
     }
 
@@ -57,10 +51,10 @@ public class ArenaManager : SimulationBehaviour {
         SetPlayerReady(true, true);
         var sequence = DOTween.Sequence();
         sequence.AppendInterval(3);
-        sequence.AppendCallback(() => { StartRound(gameRunner); });
+        sequence.AppendCallback(StartRound);
     }
 
-    private void StartRound(GameRunner gameRunner) {
+    private void StartRound() {
         var activePlayers = gameRunner.SpawnedCharacters;
         var spawnPoints = gameRunner.SpawnPositions;
         var rbs = new List<Rigidbody2D>();
@@ -156,8 +150,4 @@ public class ArenaManager : SimulationBehaviour {
         FindObjectOfType<ArenaManager>().ShowRoundStartEffects();
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public static void RpcPlayerIsReady(NetworkRunner runner, PlayerRef playerRef) {
-        FindObjectOfType<ArenaManager>().PlayerIsRead(playerRef);
-    }
 }
